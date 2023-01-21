@@ -1,14 +1,9 @@
 import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { IItem } from "@/types/IBoard";
 
-interface Props {
-  id: string;
-  title: string;
-  description: string;
-}
-
-const DraggableItem = ({ id, title, description }: Props) => {
+const DraggableItem = ({ id, title }: IItem) => {
   const {
     attributes,
     listeners,

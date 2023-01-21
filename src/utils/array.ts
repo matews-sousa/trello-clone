@@ -1,10 +1,5 @@
+import { IItem } from "@/types/IBoard";
 import { arrayMove as dndKitArrayMove } from "@dnd-kit/sortable";
-
-interface IItem {
-  id: string;
-  title: string;
-  description: string;
-}
 
 export const removeAtIndex = (array: IItem[], index: number) => {
   const newArray = new Set([

@@ -15,7 +15,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { v4 as uuidv4 } from "uuid";
 import DroppableList from "@/components/droppable-list";
 import { insertAtIndex, removeAtIndex, arrayMove } from "@/utils/array";
-import { IBoard } from "@/types/IBoard";
+import { IList } from "@/types/IBoard";
 import Layout from "@/components/layout";
 import { useRouter } from "next/router";
 import {
@@ -24,18 +24,62 @@ import {
   doc,
   onSnapshot,
   query,
+  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import AddButton from "@/components/add-button";
+import find from "@/utils/find";
 
 const BoardPage = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [listsDocId, setListsDocId] = useState<string | null>(null);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
-  const [lists, setLists] = useState<IBoard>({});
+  const [lists, setLists] = useState<IList[]>([
+    {
+      id: uuidv4(),
+      title: "To Do",
+      items: [
+        {
+          id: uuidv4(),
+          title: "Create a new board",
+        },
+        {
+          id: uuidv4(),
+          title: "Add a new list",
+        },
+      ],
+    },
+    {
+      id: uuidv4(),
+      title: "In Progress",
+      items: [
+        {
+          id: uuidv4(),
+          title: "Drag and drop items between lists",
+        },
+        {
+          id: uuidv4(),
+          title: "Drag and drop lists",
+        },
+      ],
+    },
+    {
+      id: uuidv4(),
+      title: "Done",
+      items: [
+        {
+          id: uuidv4(),
+          title: "Create a new board",
+        },
+        {
+          id: uuidv4(),
+          title: "Add a new list",
+        },
+      ],
+    },
+  ]);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor),
@@ -44,30 +88,6 @@ const BoardPage = () => {
     }),
   );
 
-  useEffect(() => {
-    const q = query(collection(db, "lists"), where("boardId", "==", id));
-    console.log(q);
-    const unsub = onSnapshot(q, async (querySnapshot) => {
-      console.log(querySnapshot);
-      if (querySnapshot.empty) {
-        const newBoard = {
-          board: {},
-          boardId: id,
-        };
-        await addDoc(collection(db, "lists"), newBoard);
-        return;
-      }
-      const data = querySnapshot.docs.map((doc) => {
-        setListsDocId(doc.id);
-
-        return { ...doc.data() };
-      });
-      console.log(data[0].board);
-      setLists(data[0].board as IBoard);
-    });
-    return () => unsub();
-  }, [id]);
-
   const handleDragStart = (event: DragStartEvent) =>
     setActiveItemId(event.active.id);
   const handleDragCancel = () => setActiveItemId(null);
@@ -75,29 +95,41 @@ const BoardPage = () => {
   const handleDragOver = ({ active, over }: DragOverEvent) => {
     if (!over?.id) return;
 
-    const activeListName = active.data.current?.sortable.containerId;
-    const overListName = over.data.current?.sortable.containerId || over.id;
+    const activeListId = active.data.current?.sortable.containerId;
+    const overListId = over.data.current?.sortable.containerId || over.id;
+    const activeList = find(lists, activeListId);
+    const overList = find(lists, overListId);
 
-    if (activeListName !== overListName) {
+    if (!activeList || !overList) return;
+
+    if (activeListId !== overListId) {
       setLists((prev) => {
         const activeItemIndex = active.data.current?.sortable.index;
         const overItemIndex =
-          over.id in prev[overListName]
-            ? prev[overListName].length + 1
+          over.id in overList.items.map((item) => item.id)
+            ? overList.items.length + 1
             : over.data.current?.sortable.index;
 
-        return {
-          ...prev,
-          [activeListName]: removeAtIndex(
-            prev[activeListName],
-            activeItemIndex,
-          ),
-          [overListName]: insertAtIndex(
-            prev[overListName],
-            overItemIndex,
-            prev[activeListName][activeItemIndex],
-          ),
-        };
+        const newLists = prev.map((list) => {
+          if (list.id === overListId) {
+            return {
+              ...list,
+              items: insertAtIndex(
+                list.items,
+                overItemIndex,
+                activeList.items[activeItemIndex],
+              ),
+            };
+          } else if (list.id === activeListId) {
+            return {
+              ...list,
+              items: removeAtIndex(list.items, activeItemIndex),
+            };
+          }
+          return list;
+        });
+
+        return newLists;
       });
     }
   };
@@ -109,39 +141,43 @@ const BoardPage = () => {
     }
 
     if (active.id !== over.id) {
-      const activeListName = active.data.current?.sortable.containerId;
-      const overListName = over.data.current?.sortable.containerId || over.id;
+      const activeListId = active.data.current?.sortable.containerId;
+      const overListId = over.data.current?.sortable.containerId || over.id;
+      const activeList = find(lists, activeListId);
+      const overList = find(lists, overListId);
+      if (!activeList || !overList) return;
       const activeItemIndex = active.data.current?.sortable.index;
       const overItemIndex =
-        over.id in lists[overListName]
-          ? lists[overListName].length + 1
+        over.id in overList.items.map((item) => item.id)
+          ? overList.items.length + 1
           : over.data.current?.sortable.index;
 
       setLists((prev) => {
-        let newLists;
-        if (activeListName === overListName) {
-          newLists = {
-            ...prev,
-            [activeListName]: arrayMove(
-              prev[activeListName],
-              activeItemIndex,
-              overItemIndex,
-            ),
-          };
-        } else {
-          newLists = {
-            ...prev,
-            [activeListName]: removeAtIndex(
-              prev[activeListName],
-              activeItemIndex,
-            ),
-            [overListName]: insertAtIndex(
-              prev[overListName],
-              overItemIndex,
-              prev[activeListName][activeItemIndex],
-            ),
-          };
-        }
+        const newLists = prev.map((list) => {
+          if (list.id === overListId) {
+            return {
+              ...list,
+              items: arrayMove(list.items, activeItemIndex, overItemIndex),
+            };
+          } else {
+            if (list.id === overListId) {
+              return {
+                ...list,
+                items: insertAtIndex(
+                  list.items,
+                  overItemIndex,
+                  activeList.items[activeItemIndex],
+                ),
+              };
+            } else if (list.id === activeListId) {
+              return {
+                ...list,
+                items: removeAtIndex(list.items, activeItemIndex),
+              };
+            }
+          }
+          return list;
+        });
         return newLists;
       });
     }
@@ -160,24 +196,14 @@ const BoardPage = () => {
       >
         <div className="flex items-start gap-10">
           {lists &&
-            Object.keys(lists)?.map((list) => (
+            lists?.map((list) => (
               <DroppableList
-                key={list}
-                id={list}
-                title={list}
-                items={lists[list]}
-                addFn={async (inputValue) => {
-                  const docRef = doc(db, "lists", listsDocId);
-                  const newItem = {
-                    id: uuidv4(),
-                    title: inputValue,
-                  };
-                  await updateDoc(docRef, {
-                    board: {
-                      ...lists,
-                      [list]: [...lists[list], newItem],
-                    },
-                  });
+                key={list.id}
+                id={list.id}
+                title={list.title}
+                items={list.items}
+                addFn={async (inputValue: string) => {
+                  return;
                 }}
               />
             ))}
@@ -185,18 +211,7 @@ const BoardPage = () => {
             btnText={"Add another list"}
             inputPlaceholder={"Enter a title..."}
             addFn={async (inputValue: string) => {
-              try {
-                const docRef = doc(db, "lists", listsDocId);
-                await updateDoc(docRef, {
-                  board: {
-                    ...lists,
-                    [inputValue]: [],
-                  },
-                });
-                console.log("Document written with ID: ", docRef.id);
-              } catch (e) {
-                console.error("Error adding document: ", e);
-              }
+              return;
             }}
           />
         </div>

@@ -1,22 +1,15 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/layout";
-import { HiPlus } from "react-icons/hi";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  doc,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
 import AddBoardModal from "@/components/add-board-modal";
 import Link from "next/link";
+import { IBoard } from "@/types/IBoard";
 
 export default function Home() {
   const { user } = useAuth();
-  const [boards, setBoards] = useState([]);
+  const [boards, setBoards] = useState<IBoard[]>([]);
 
   useEffect(() => {
     const q = query(
@@ -30,8 +23,7 @@ export default function Home() {
           ...doc.data(),
         };
       });
-      console.log(boards);
-      setBoards(boards);
+      setBoards(boards as IBoard[]);
     });
     return () => unsub();
   }, []);

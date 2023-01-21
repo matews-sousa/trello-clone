@@ -6,15 +6,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import AddButton from "./add-button";
+import { IItem } from "@/types/IBoard";
 
 interface Props {
   id: string;
   title: string;
-  items: {
-    id: string;
-    title: string;
-    description: string;
-  }[];
+  items: IItem[];
   addFn: (inputValue: string) => void;
 }
 
@@ -33,12 +30,7 @@ const DroppableList = ({ id, title, items, addFn }: Props) => {
       >
         <ul ref={setNodeRef} className="w-72 min-h-screen flex flex-col gap-2">
           {items?.map((item) => (
-            <DraggableItem
-              key={item.id}
-              id={item.id}
-              title={item.title}
-              description={item.description}
-            />
+            <DraggableItem key={item.id} id={item.id} title={item.title} />
           ))}
           <div className="mt-6">
             <AddButton

@@ -1,13 +1,17 @@
 export interface IItem {
   id: string;
   title: string;
-  description: string;
 }
 
 export interface IList {
+  id: string;
+  title: string;
   items: IItem[];
 }
 
 export interface IBoard {
-  [key: string]: IItem[];
+  id: string;
+  title: string;
+  cover: string;
+  createdAt: Date;
 }
