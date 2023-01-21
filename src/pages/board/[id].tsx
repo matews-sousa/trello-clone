@@ -19,6 +19,7 @@ import { IBoard } from "@/types/IBoard";
 import Layout from "@/components/layout";
 import { useRouter } from "next/router";
 import {
+  addDoc,
   collection,
   doc,
   onSnapshot,
@@ -33,11 +34,7 @@ const BoardPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const [listsDocId, setListsDocId] = useState<string | null>(null);
-  const [activeItemId, setActiveItemId] = useState<{
-    id: string;
-    title: string;
-    description: string;
-  } | null>(null);
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [lists, setLists] = useState<IBoard>({});
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -49,7 +46,17 @@ const BoardPage = () => {
 
   useEffect(() => {
     const q = query(collection(db, "lists"), where("boardId", "==", id));
-    const unsub = onSnapshot(q, (querySnapshot) => {
+    console.log(q);
+    const unsub = onSnapshot(q, async (querySnapshot) => {
+      console.log(querySnapshot);
+      if (querySnapshot.empty) {
+        const newBoard = {
+          board: {},
+          boardId: id,
+        };
+        await addDoc(collection(db, "lists"), newBoard);
+        return;
+      }
       const data = querySnapshot.docs.map((doc) => {
         setListsDocId(doc.id);
 
@@ -62,9 +69,7 @@ const BoardPage = () => {
   }, [id]);
 
   const handleDragStart = (event: DragStartEvent) =>
-    setActiveItemId(
-      Object.keys(lists).find((list) => list.items === event.active.id),
-    );
+    setActiveItemId(event.active.id);
   const handleDragCancel = () => setActiveItemId(null);
 
   const handleDragOver = ({ active, over }: DragOverEvent) => {
@@ -77,24 +82,21 @@ const BoardPage = () => {
       setLists((prev) => {
         const activeItemIndex = active.data.current?.sortable.index;
         const overItemIndex =
-          over.id in prev[overListName].items
-            ? prev[overListName].items.length + 1
+          over.id in prev[overListName]
+            ? prev[overListName].length + 1
             : over.data.current?.sortable.index;
 
         return {
           ...prev,
-          [activeListName]: {
-            ...prev[activeListName],
-            items: removeAtIndex(prev[activeListName].items, activeItemIndex),
-          },
-          [overListName]: {
-            ...prev[overListName],
-            items: insertAtIndex(
-              prev[overListName].items,
-              overItemIndex,
-              prev[activeListName].items[activeItemIndex],
-            ),
-          },
+          [activeListName]: removeAtIndex(
+            prev[activeListName],
+            activeItemIndex,
+          ),
+          [overListName]: insertAtIndex(
+            prev[overListName],
+            overItemIndex,
+            prev[activeListName][activeItemIndex],
+          ),
         };
       });
     }
@@ -111,8 +113,8 @@ const BoardPage = () => {
       const overListName = over.data.current?.sortable.containerId || over.id;
       const activeItemIndex = active.data.current?.sortable.index;
       const overItemIndex =
-        over.id in lists[overListName].items
-          ? lists[overListName].items.length + 1
+        over.id in lists[overListName]
+          ? lists[overListName].length + 1
           : over.data.current?.sortable.index;
 
       setLists((prev) => {
@@ -120,30 +122,24 @@ const BoardPage = () => {
         if (activeListName === overListName) {
           newLists = {
             ...prev,
-            [activeListName]: {
-              ...prev[activeListName],
-              items: arrayMove(
-                prev[activeListName].items,
-                activeItemIndex,
-                overItemIndex,
-              ),
-            },
+            [activeListName]: arrayMove(
+              prev[activeListName],
+              activeItemIndex,
+              overItemIndex,
+            ),
           };
         } else {
           newLists = {
             ...prev,
-            [activeListName]: {
-              ...prev[activeListName],
-              items: removeAtIndex(prev[activeListName].items, activeItemIndex),
-            },
-            [overListName]: {
-              ...prev[overListName],
-              items: insertAtIndex(
-                prev[overListName].items,
-                overItemIndex,
-                prev[activeListName].items[activeItemIndex],
-              ),
-            },
+            [activeListName]: removeAtIndex(
+              prev[activeListName],
+              activeItemIndex,
+            ),
+            [overListName]: insertAtIndex(
+              prev[overListName],
+              overItemIndex,
+              prev[activeListName][activeItemIndex],
+            ),
           };
         }
         return newLists;
@@ -169,7 +165,7 @@ const BoardPage = () => {
                 key={list}
                 id={list}
                 title={list}
-                items={lists[list].items}
+                items={lists[list]}
                 addFn={async (inputValue) => {
                   const docRef = doc(db, "lists", listsDocId);
                   const newItem = {
@@ -179,10 +175,7 @@ const BoardPage = () => {
                   await updateDoc(docRef, {
                     board: {
                       ...lists,
-                      [list]: {
-                        ...lists[list],
-                        items: [...lists[list].items, newItem],
-                      },
+                      [list]: [...lists[list], newItem],
                     },
                   });
                 }}
@@ -197,9 +190,7 @@ const BoardPage = () => {
                 await updateDoc(docRef, {
                   board: {
                     ...lists,
-                    [inputValue]: {
-                      items: [],
-                    },
+                    [inputValue]: [],
                   },
                 });
                 console.log("Document written with ID: ", docRef.id);

@@ -9,5 +9,5 @@ export interface IList {
 }
 
 export interface IBoard {
-  [key: string]: IList;
+  [key: string]: IItem[];
 }
