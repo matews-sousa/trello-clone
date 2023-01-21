@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -16,60 +16,29 @@ import { v4 as uuidv4 } from "uuid";
 import DroppableList from "@/components/droppable-list";
 import { insertAtIndex, removeAtIndex, arrayMove } from "@/utils/array";
 import { IBoard } from "@/types/IBoard";
+import Layout from "@/components/layout";
+import { useRouter } from "next/router";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import AddButton from "@/components/add-button";
 
-const index = () => {
+const BoardPage = () => {
+  const router = useRouter();
+  const { id } = router.query;
+  const [listsDocId, setListsDocId] = useState<string | null>(null);
   const [activeItemId, setActiveItemId] = useState<{
     id: string;
     title: string;
     description: string;
   } | null>(null);
-  const [lists, setLists] = useState<IBoard>({
-    Todo: {
-      id: uuidv4(),
-      items: [
-        {
-          id: uuidv4(),
-          title: "Learn React",
-          description: "Learn React by building a Kanban board",
-        },
-        {
-          id: uuidv4(),
-          title: "Learn TypeScript",
-          description: "Learn TypeScript by building a Kanban board",
-        },
-        {
-          id: uuidv4(),
-          title: "Learn Next.js",
-          description: "Learn Next.js by building a Kanban board",
-        },
-      ],
-    },
-    "In Progress": {
-      id: uuidv4(),
-      items: [
-        {
-          id: uuidv4(),
-          title: "Learn DnD",
-          description: "Learn DnD by building a Kanban board",
-        },
-        {
-          id: uuidv4(),
-          title: "Learn Tailwind",
-          description: "Learn Tailwind by building a Kanban board",
-        },
-      ],
-    },
-    Done: {
-      id: uuidv4(),
-      items: [
-        {
-          id: uuidv4(),
-          title: "Learn GraphQL",
-          description: "Learn GraphQL by building a Kanban board",
-        },
-      ],
-    },
-  });
+  const [lists, setLists] = useState<IBoard>({});
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor),
@@ -77,6 +46,20 @@ const index = () => {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
+
+  useEffect(() => {
+    const q = query(collection(db, "lists"), where("boardId", "==", id));
+    const unsub = onSnapshot(q, (querySnapshot) => {
+      const data = querySnapshot.docs.map((doc) => {
+        setListsDocId(doc.id);
+
+        return { ...doc.data() };
+      });
+      console.log(data[0].board);
+      setLists(data[0].board as IBoard);
+    });
+    return () => unsub();
+  }, [id]);
 
   const handleDragStart = (event: DragStartEvent) =>
     setActiveItemId(
@@ -170,26 +153,65 @@ const index = () => {
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragCancel={handleDragCancel}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex gap-2">
-        {Object.keys(lists)?.map((list) => (
-          <DroppableList
-            key={list}
-            id={list}
-            title={list}
-            items={lists[list].items}
+    <Layout>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragCancel={handleDragCancel}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex items-start gap-10">
+          {lists &&
+            Object.keys(lists)?.map((list) => (
+              <DroppableList
+                key={list}
+                id={list}
+                title={list}
+                items={lists[list].items}
+                addFn={async (inputValue) => {
+                  const docRef = doc(db, "lists", listsDocId);
+                  const newItem = {
+                    id: uuidv4(),
+                    title: inputValue,
+                  };
+                  await updateDoc(docRef, {
+                    board: {
+                      ...lists,
+                      [list]: {
+                        ...lists[list],
+                        items: [...lists[list].items, newItem],
+                      },
+                    },
+                  });
+                }}
+              />
+            ))}
+          <AddButton
+            btnText={"Add another list"}
+            inputPlaceholder={"Enter a title..."}
+            addFn={async (inputValue: string) => {
+              try {
+                const docRef = doc(db, "lists", listsDocId);
+                await updateDoc(docRef, {
+                  board: {
+                    ...lists,
+                    [inputValue]: {
+                      items: [],
+                    },
+                  },
+                });
+                console.log("Document written with ID: ", docRef.id);
+              } catch (e) {
+                console.error("Error adding document: ", e);
+              }
+            }}
           />
-        ))}
-      </div>
-    </DndContext>
+        </div>
+      </DndContext>
+    </Layout>
   );
 };
 
-export default index;
+export default BoardPage;

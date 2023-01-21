@@ -29,7 +29,7 @@ const DraggableItem = ({ id, title, description }: Props) => {
       {...attributes}
       {...listeners}
       ref={setNodeRef}
-      className={"p-2 border border-gray-300 bg-gray-200"}
+      className={"p-4 bg-white rounded-md shadow"}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
@@ -39,7 +39,6 @@ const DraggableItem = ({ id, title, description }: Props) => {
       }}
     >
       <h3 className="text-2xl font-semibold">{title}</h3>
-      <p>{description}</p>
     </li>
   );
 };

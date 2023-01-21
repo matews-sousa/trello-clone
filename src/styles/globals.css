@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-gray-200;
+  }
+
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-md shadow-lg;
+  }
+
+  .btn {
+    @apply px-4 py-2 text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-lg flex items-center justify-center space-x-2 font-semibold;
+  }
+}

@@ -5,7 +5,6 @@ export interface IItem {
 }
 
 export interface IList {
-  id: string;
   items: IItem[];
 }
 
