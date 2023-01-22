@@ -23,22 +23,22 @@ const DroppableList = ({ id, title, items, addFn }: Props) => {
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+      <div className="mb-6">
+        <AddButton
+          btnText={"Add another card"}
+          inputPlaceholder={"Card title"}
+          addFn={addFn}
+        />
+      </div>
       <SortableContext
         id={id}
         items={items ? items.map((item) => item.id) : []}
         strategy={verticalListSortingStrategy}
       >
-        <ul ref={setNodeRef} className="w-72 min-h-screen flex flex-col gap-2">
+        <ul ref={setNodeRef} className="w-72 h-[60vh] flex flex-col gap-2">
           {items?.map((item) => (
             <DraggableItem key={item.id} id={item.id} title={item.title} />
           ))}
-          <div className="mt-6">
-            <AddButton
-              btnText={"Add another card"}
-              inputPlaceholder={"Card title"}
-              addFn={addFn}
-            />
-          </div>
         </ul>
       </SortableContext>
     </div>

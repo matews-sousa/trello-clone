@@ -13,7 +13,7 @@ const AddButton = ({ btnText, inputPlaceholder, addFn }: Props) => {
   return (
     <div>
       {isInputOpen ? (
-        <div className="bg-white shadow rounded-lg p-2">
+        <div className="bg-white shadow rounded-lg p-2 w-64">
           <input
             type="text"
             placeholder={inputPlaceholder}
@@ -42,7 +42,7 @@ const AddButton = ({ btnText, inputPlaceholder, addFn }: Props) => {
           </div>
         </div>
       ) : (
-        <button className="btn" onClick={() => setIsInputOpen(true)}>
+        <button className="btn w-64" onClick={() => setIsInputOpen(true)}>
           {btnText}
         </button>
       )}

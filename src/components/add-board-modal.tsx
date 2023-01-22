@@ -30,6 +30,7 @@ const AddBoardModal = () => {
         cover: imageSelected,
         ownerId: user.uid,
         createdAt: new Date(),
+        lists: [],
       });
       closeModal();
       console.log("Document written with ID: ", docRef.id);

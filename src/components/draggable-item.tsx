@@ -24,7 +24,7 @@ const DraggableItem = ({ id, title }: IItem) => {
       {...attributes}
       {...listeners}
       ref={setNodeRef}
-      className={"p-4 bg-white rounded-md shadow"}
+      className={"w-64 p-4 bg-white rounded-md shadow-lg"}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,

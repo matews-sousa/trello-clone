@@ -15,71 +15,22 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { v4 as uuidv4 } from "uuid";
 import DroppableList from "@/components/droppable-list";
 import { insertAtIndex, removeAtIndex, arrayMove } from "@/utils/array";
-import { IList } from "@/types/IBoard";
+import { IBoard, IList } from "@/types/IBoard";
 import Layout from "@/components/layout";
 import { useRouter } from "next/router";
-import {
-  addDoc,
-  collection,
-  doc,
-  onSnapshot,
-  query,
-  setDoc,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import AddButton from "@/components/add-button";
 import find from "@/utils/find";
+
+type BoardState = Omit<IBoard, "lists">;
 
 const BoardPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
-  const [lists, setLists] = useState<IList[]>([
-    {
-      id: uuidv4(),
-      title: "To Do",
-      items: [
-        {
-          id: uuidv4(),
-          title: "Create a new board",
-        },
-        {
-          id: uuidv4(),
-          title: "Add a new list",
-        },
-      ],
-    },
-    {
-      id: uuidv4(),
-      title: "In Progress",
-      items: [
-        {
-          id: uuidv4(),
-          title: "Drag and drop items between lists",
-        },
-        {
-          id: uuidv4(),
-          title: "Drag and drop lists",
-        },
-      ],
-    },
-    {
-      id: uuidv4(),
-      title: "Done",
-      items: [
-        {
-          id: uuidv4(),
-          title: "Create a new board",
-        },
-        {
-          id: uuidv4(),
-          title: "Add a new list",
-        },
-      ],
-    },
-  ]);
+  const [board, setBoard] = useState<BoardState>();
+  const [lists, setLists] = useState<IList[] | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor),
@@ -88,12 +39,56 @@ const BoardPage = () => {
     }),
   );
 
+  useEffect(() => {
+    const q = doc(db, "boards", id as string);
+    const unsub = onSnapshot(q, (doc) => {
+      if (doc.exists()) {
+        const _board: BoardState = {
+          id: doc.id,
+          title: doc.data()?.title,
+          createdAt: doc.data()?.createdAt,
+          cover: doc.data()?.cover,
+        };
+        setBoard(_board);
+        setLists(doc.data()?.lists);
+      } else {
+        console.log("No such document!");
+      }
+    });
+
+    return () => unsub();
+  }, [id]);
+
+  useEffect(() => {
+    if (!lists) return;
+    updateLists(lists);
+  }, [lists]);
+
+  const addList = async (inputValue: string) => {
+    const newList = {
+      id: uuidv4(),
+      title: inputValue,
+      items: [],
+    };
+    const docRef = doc(db, "boards", id as string);
+    await updateDoc(docRef, {
+      lists: lists ? [...lists, newList] : [newList],
+    });
+  };
+
+  const updateLists = async (lists: IList[]) => {
+    const docRef = doc(db, "boards", id as string);
+    await updateDoc(docRef, {
+      lists,
+    });
+  };
+
   const handleDragStart = (event: DragStartEvent) =>
     setActiveItemId(event.active.id);
   const handleDragCancel = () => setActiveItemId(null);
 
   const handleDragOver = ({ active, over }: DragOverEvent) => {
-    if (!over?.id) return;
+    if (!over?.id || !lists) return;
 
     const activeListId = active.data.current?.sortable.containerId;
     const overListId = over.data.current?.sortable.containerId || over.id;
@@ -104,6 +99,7 @@ const BoardPage = () => {
 
     if (activeListId !== overListId) {
       setLists((prev) => {
+        if (!prev) return prev;
         const activeItemIndex = active.data.current?.sortable.index;
         const overItemIndex =
           over.id in overList.items.map((item) => item.id)
@@ -135,7 +131,7 @@ const BoardPage = () => {
   };
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over) {
+    if (!over || !lists) {
       setActiveItemId(null);
       return;
     }
@@ -153,6 +149,7 @@ const BoardPage = () => {
           : over.data.current?.sortable.index;
 
       setLists((prev) => {
+        if (!prev) return prev;
         const newLists = prev.map((list) => {
           if (list.id === overListId) {
             return {
@@ -185,7 +182,7 @@ const BoardPage = () => {
   };
 
   return (
-    <Layout>
+    <Layout boardTitle={board?.title}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -194,7 +191,7 @@ const BoardPage = () => {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex items-start gap-10">
+        <div className="flex items-start px-10 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-500 hover:scrollbar-thumb-gray-600 scrollbar-track-gray-300 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
           {lists &&
             lists?.map((list) => (
               <DroppableList
@@ -203,16 +200,29 @@ const BoardPage = () => {
                 title={list.title}
                 items={list.items}
                 addFn={async (inputValue: string) => {
-                  return;
+                  const newItem = {
+                    id: uuidv4(),
+                    title: inputValue,
+                  };
+                  const docRef = doc(db, "boards", id as string);
+                  await updateDoc(docRef, {
+                    lists: lists.map((_list) => {
+                      if (_list.id === list.id) {
+                        return {
+                          ..._list,
+                          items: [..._list.items, newItem],
+                        };
+                      }
+                      return _list;
+                    }),
+                  });
                 }}
               />
             ))}
           <AddButton
             btnText={"Add another list"}
             inputPlaceholder={"Enter a title..."}
-            addFn={async (inputValue: string) => {
-              return;
-            }}
+            addFn={addList}
           />
         </div>
       </DndContext>

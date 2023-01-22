@@ -3,13 +3,14 @@ import Navbar from "./navbar";
 
 interface Props {
   children: React.ReactNode;
+  boardTitle?: string;
 }
 
-const Layout = ({ children }: Props) => {
+const Layout = ({ boardTitle, children }: Props) => {
   return (
     <>
-      <Navbar boardTitle="Title" />
-      <main className="container mx-auto mt-10">{children}</main>
+      <Navbar boardTitle={boardTitle} />
+      <main className="mx-auto mt-36">{children}</main>
     </>
   );
 };

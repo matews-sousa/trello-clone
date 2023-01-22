@@ -14,4 +14,5 @@ export interface IBoard {
   title: string;
   cover: string;
   createdAt: Date;
+  lists: IList[];
 }
