@@ -2,6 +2,7 @@ import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { IItem } from "@/types/IBoard";
+import Item from "./item";
 
 const DraggableItem = ({ id, title }: IItem) => {
   const {
@@ -24,16 +25,13 @@ const DraggableItem = ({ id, title }: IItem) => {
       {...attributes}
       {...listeners}
       ref={setNodeRef}
-      className={"w-64 p-4 bg-white rounded-md shadow-lg"}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
-        cursor: isDragging ? "grabbing" : "grab",
-        scale: isDragging ? 2 : 1,
       }}
     >
-      <h3 className="text-2xl font-semibold">{title}</h3>
+      <Item title={title} />
     </li>
   );
 };

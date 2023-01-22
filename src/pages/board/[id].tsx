@@ -10,25 +10,27 @@ import {
   DragEndEvent,
   DragOverEvent,
   TouchSensor,
+  DragOverlay,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { v4 as uuidv4 } from "uuid";
 import DroppableList from "@/components/droppable-list";
 import { insertAtIndex, removeAtIndex, arrayMove } from "@/utils/array";
-import { IBoard, IList } from "@/types/IBoard";
+import { IBoard, IItem, IList } from "@/types/IBoard";
 import Layout from "@/components/layout";
 import { useRouter } from "next/router";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import AddButton from "@/components/add-button";
 import find from "@/utils/find";
+import Item from "@/components/item";
 
 type BoardState = Omit<IBoard, "lists">;
 
 const BoardPage = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<IItem | null | undefined>(null);
   const [board, setBoard] = useState<BoardState>();
   const [lists, setLists] = useState<IList[] | null>(null);
   const sensors = useSensors(
@@ -83,9 +85,17 @@ const BoardPage = () => {
     });
   };
 
-  const handleDragStart = (event: DragStartEvent) =>
-    setActiveItemId(event.active.id);
-  const handleDragCancel = () => setActiveItemId(null);
+  const handleDragStart = (event: DragStartEvent) => {
+    if (!lists) return;
+    const activeList = find(
+      lists,
+      event.active.data.current?.sortable.containerId,
+    );
+    const item = activeList?.items[event.active.data.current?.sortable.index];
+
+    setActiveItem(item);
+  };
+  const handleDragCancel = () => setActiveItem(null);
 
   const handleDragOver = ({ active, over }: DragOverEvent) => {
     if (!over?.id || !lists) return;
@@ -132,7 +142,7 @@ const BoardPage = () => {
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || !lists) {
-      setActiveItemId(null);
+      setActiveItem(null);
       return;
     }
 
@@ -178,7 +188,7 @@ const BoardPage = () => {
         return newLists;
       });
     }
-    setActiveItemId(null);
+    setActiveItem(null);
   };
 
   return (
@@ -191,7 +201,7 @@ const BoardPage = () => {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex items-start px-10 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-500 hover:scrollbar-thumb-gray-600 scrollbar-track-gray-300 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+        <div className="flex items-start gap-10 px-10 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-500 hover:scrollbar-thumb-gray-600 scrollbar-track-gray-300 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
           {lists &&
             lists?.map((list) => (
               <DroppableList
@@ -225,6 +235,11 @@ const BoardPage = () => {
             addFn={addList}
           />
         </div>
+        <DragOverlay>
+          {activeItem ? (
+            <Item title={activeItem.title} key={activeItem.id} />
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </Layout>
   );
