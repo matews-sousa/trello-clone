@@ -225,6 +225,12 @@ const BoardPage = () => {
                     }),
                   });
                 }}
+                deleteFn={async () => {
+                  const docRef = doc(db, "boards", id as string);
+                  await updateDoc(docRef, {
+                    lists: lists.filter((_list) => _list.id !== list.id),
+                  });
+                }}
               />
             ))}
           <AddButton
