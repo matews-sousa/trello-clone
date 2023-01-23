@@ -6,6 +6,7 @@ export interface IItem {
 export interface IList {
   id: string;
   title: string;
+  createdAt: Date;
   items: IItem[];
 }
 
@@ -14,5 +15,4 @@ export interface IBoard {
   title: string;
   cover: string;
   createdAt: Date;
-  lists: IList[];
 }

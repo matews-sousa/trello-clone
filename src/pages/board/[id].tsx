@@ -13,13 +13,22 @@ import {
   DragOverlay,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { v4 as uuidv4 } from "uuid";
 import DroppableList from "@/components/droppable-list";
 import { insertAtIndex, removeAtIndex, arrayMove } from "@/utils/array";
 import { IBoard, IItem, IList } from "@/types/IBoard";
 import Layout from "@/components/layout";
 import { useRouter } from "next/router";
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  onSnapshot,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import AddButton from "@/components/add-button";
 import find from "@/utils/find";
@@ -27,14 +36,11 @@ import Item from "@/components/item";
 import Modal from "@/components/modal";
 import { HiOutlineX } from "react-icons/hi";
 
-type BoardState = Omit<IBoard, "lists">;
-
 const BoardPage = () => {
   const router = useRouter();
-  console.log(router);
   const { id } = router.query;
   const [activeItem, setActiveItem] = useState<IItem | null | undefined>(null);
-  const [board, setBoard] = useState<BoardState>();
+  const [board, setBoard] = useState<IBoard>();
   const [lists, setLists] = useState<IList[] | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -48,21 +54,57 @@ const BoardPage = () => {
     }),
   );
 
-  useEffect(() => {
-    const q = doc(db, "boards", id as string);
-    const unsub = onSnapshot(q, (doc) => {
-      if (doc.exists()) {
-        const _board: BoardState = {
-          id: doc.id,
-          title: doc.data()?.title,
-          createdAt: doc.data()?.createdAt,
-          cover: doc.data()?.cover,
+  const getItemsFromArrayOfIds = async (
+    itemsIds: string[],
+  ): Promise<IItem[]> => {
+    const items = await Promise.all(
+      itemsIds.map(async (id) => {
+        const docRef = doc(db, "items", id);
+        const docSnap = await getDoc(docRef);
+
+        return {
+          id: docSnap.id,
+          title: docSnap.data()?.title,
+          description: docSnap.data()?.description,
         };
-        setBoard(_board);
-        setLists(doc.data()?.lists);
-      } else {
-        console.log("No such document!");
-      }
+      }),
+    );
+    return items;
+  };
+
+  const getBoardDoc = async (id: string) => {
+    const doRef = doc(db, "boards", id);
+    const docSnap = await getDoc(doRef);
+    if (docSnap.exists()) {
+      const board = {
+        id: docSnap.id,
+        cover: docSnap.data().cover,
+        title: docSnap.data().title,
+        createdAt: docSnap.data().createdAt,
+      } as IBoard;
+      setBoard(board);
+    }
+  };
+
+  useEffect(() => {
+    getBoardDoc(id as string);
+
+    const q = query(collection(db, "lists"), where("boardId", "==", id));
+    const unsub = onSnapshot(q, async (querySnapshot) => {
+      const _lists = await Promise.all(
+        querySnapshot.docs.map(async (doc) => {
+          const items = await getItemsFromArrayOfIds(doc.data().itemsIds);
+          return {
+            id: doc.id,
+            title: doc.data().title,
+            createdAt: doc.data().createdAt,
+            items: items,
+          } as IList;
+        }),
+      );
+      setLists(
+        _lists.sort((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf()),
+      );
     });
 
     return () => unsub();
@@ -74,22 +116,28 @@ const BoardPage = () => {
   }, [lists]);
 
   const addList = async (inputValue: string) => {
-    const newList = {
-      id: uuidv4(),
+    await addDoc(collection(db, "lists"), {
+      boardId: id,
       title: inputValue,
-      items: [],
-    };
-    const docRef = doc(db, "boards", id as string);
-    await updateDoc(docRef, {
-      lists: lists ? [...lists, newList] : [newList],
+      createdAt: Date.now(),
+      itemsIds: [],
     });
   };
 
   const updateLists = async (lists: IList[]) => {
-    const docRef = doc(db, "boards", id as string);
-    await updateDoc(docRef, {
-      lists,
-    });
+    if (!lists) return;
+    const listsIds = lists.map((list) => list.id);
+    const updatedLists = await Promise.all(
+      listsIds.map(async (list) => {
+        const docRef = doc(db, "lists", list);
+        await updateDoc(docRef, {
+          itemsIds: lists
+            .find((l) => l.id === list)
+            ?.items.map((item) => item.id),
+        });
+      }),
+    );
+    return updatedLists;
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -141,7 +189,6 @@ const BoardPage = () => {
           }
           return list;
         });
-
         return newLists;
       });
     }
@@ -224,29 +271,34 @@ const BoardPage = () => {
               <DroppableList
                 key={list.id}
                 list={list}
+                // add item to list
                 addFn={async (inputValue: string) => {
-                  const newItem = {
-                    id: uuidv4(),
+                  const newItemdocRef = await addDoc(collection(db, "items"), {
                     title: inputValue,
-                  };
-                  const docRef = doc(db, "boards", id as string);
-                  await updateDoc(docRef, {
-                    lists: lists.map((_list) => {
-                      if (_list.id === list.id) {
-                        return {
-                          ..._list,
-                          items: [..._list.items, newItem],
-                        };
-                      }
-                      return _list;
-                    }),
+                    listId: list.id,
+                  });
+                  const listDocRef = doc(db, "lists", list.id as string);
+                  await updateDoc(listDocRef, {
+                    itemsIds: [
+                      ...list.items.map((item) => item.id),
+                      newItemdocRef.id,
+                    ],
                   });
                 }}
+                // delete list
                 deleteFn={async () => {
-                  const docRef = doc(db, "boards", id as string);
-                  await updateDoc(docRef, {
-                    lists: lists.filter((_list) => _list.id !== list.id),
-                  });
+                  const docRef = doc(db, "lists", list.id as string);
+                  const listDoc = await getDoc(docRef);
+                  if (listDoc.exists()) {
+                    const listData = listDoc.data();
+                    if (listData) {
+                      const itemsIds = listData.itemsIds;
+                      itemsIds.forEach(async (itemId: string) => {
+                        await deleteDoc(doc(db, "items", itemId));
+                      });
+                    }
+                  }
+                  await deleteDoc(doc(db, "lists", list.id as string));
                 }}
               />
             ))}

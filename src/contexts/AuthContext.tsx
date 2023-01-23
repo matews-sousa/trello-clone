@@ -19,7 +19,6 @@ const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  console.log(user);
   const [isLoading, setIsLoading] = useState(true);
 
   const signInWithGoogle = () => {
