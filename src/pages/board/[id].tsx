@@ -234,7 +234,9 @@ const BoardPage = () => {
           />
         </div>
         <DragOverlay>
-          {activeItem ? <Item item={activeItem} key={activeItem.id} /> : null}
+          {activeItem ? (
+            <Item item={activeItem} key={activeItem.id} dragOverlay />
+          ) : null}
         </DragOverlay>
       </DndContext>
     </Layout>

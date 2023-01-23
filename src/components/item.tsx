@@ -10,10 +10,10 @@ interface Props {
 const Item = ({ item, isDragging, dragOverlay }: Props) => {
   return (
     <div
-      className={`w-64 p-2 bg-white rounded-md shadow-md ${
+      className={`w-64 p-2 bg-white rounded-md shadow-md transition-transform ${
         isDragging &&
         "bg-blue-400 text-transparent bg-opacity-50 border-2 border-dashed border-blue-700"
-      }`}
+      } ${dragOverlay && "rotate-3"}`}
       style={{
         cursor: dragOverlay ? "grabbing" : "grab",
       }}
