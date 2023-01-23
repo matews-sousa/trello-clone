@@ -6,23 +6,21 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import AddButton from "./add-button";
-import { IItem } from "@/types/IBoard";
+import { IList } from "@/types/IBoard";
 
 interface Props {
-  id: string;
-  title: string;
-  items: IItem[];
+  list: IList;
   addFn: (inputValue: string) => void;
 }
 
-const DroppableList = ({ id, title, items, addFn }: Props) => {
+const DroppableList = ({ list, addFn }: Props) => {
   const { setNodeRef } = useDroppable({
-    id,
+    id: list.id,
   });
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+      <h2 className="text-2xl font-semibold mb-4">{list.title}</h2>
       <div className="mb-6">
         <AddButton
           btnText={"Add another card"}
@@ -31,16 +29,16 @@ const DroppableList = ({ id, title, items, addFn }: Props) => {
         />
       </div>
       <SortableContext
-        id={id}
-        items={items ? items.map((item) => item.id) : []}
+        id={list.id}
+        items={list.items ? list.items.map((item) => item.id) : []}
         strategy={verticalListSortingStrategy}
       >
         <ul
           ref={setNodeRef}
           className="h-[60vh] flex flex-col gap-2 overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 hover:scrollbar-thumb-gray-600 scrollbar-track-gray-300 scrollbar-thumb-rounded-full scrollbar-track-rounded-full"
         >
-          {items?.map((item) => (
-            <DraggableItem key={item.id} id={item.id} title={item.title} />
+          {list.items?.map((item) => (
+            <DraggableItem key={item.id} item={item} />
           ))}
         </ul>
       </SortableContext>

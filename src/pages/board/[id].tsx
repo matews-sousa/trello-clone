@@ -206,9 +206,7 @@ const BoardPage = () => {
             lists?.map((list) => (
               <DroppableList
                 key={list.id}
-                id={list.id}
-                title={list.title}
-                items={list.items}
+                list={list}
                 addFn={async (inputValue: string) => {
                   const newItem = {
                     id: uuidv4(),
@@ -236,9 +234,7 @@ const BoardPage = () => {
           />
         </div>
         <DragOverlay>
-          {activeItem ? (
-            <Item title={activeItem.title} key={activeItem.id} />
-          ) : null}
+          {activeItem ? <Item item={activeItem} key={activeItem.id} /> : null}
         </DragOverlay>
       </DndContext>
     </Layout>

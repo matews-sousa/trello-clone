@@ -4,7 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { IItem } from "@/types/IBoard";
 import Item from "./item";
 
-const DraggableItem = ({ id, title }: IItem) => {
+const DraggableItem = ({ item }: { item: IItem }) => {
   const {
     attributes,
     listeners,
@@ -13,7 +13,7 @@ const DraggableItem = ({ id, title }: IItem) => {
     transition,
     isDragging,
   } = useSortable({
-    id,
+    id: item.id,
     transition: {
       duration: 150, // milliseconds
       easing: "cubic-bezier(0.25, 1, 0.5, 1)",
@@ -28,10 +28,9 @@ const DraggableItem = ({ id, title }: IItem) => {
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.5 : 1,
       }}
     >
-      <Item title={title} />
+      <Item item={item} isDragging={isDragging} />
     </li>
   );
 };

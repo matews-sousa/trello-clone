@@ -30,25 +30,27 @@ export default function Home() {
 
   return (
     <Layout>
-      <header className="flex justify-between">
-        <h1 className="text-3xl font-semibold">All Boards</h1>
-        <AddBoardModal />
-      </header>
-      <div className="flex gap-6 mt-6">
-        {boards.map((board) => (
-          <Link
-            href={`/board/${board.id}`}
-            key={board.id}
-            className="bg-white shadow-md rounded-xl p-4 w-72"
-          >
-            <img
-              src={board.cover}
-              alt=""
-              className="rounded-xl w-full h-40 object-cover"
-            />
-            <h2 className="text-xl font-semibold mt-4">{board.title}</h2>
-          </Link>
-        ))}
+      <div className="px-10">
+        <header className="flex justify-between">
+          <h1 className="text-3xl font-semibold">All Boards</h1>
+          <AddBoardModal />
+        </header>
+        <div className="flex gap-6 mt-6">
+          {boards.map((board) => (
+            <Link
+              href={`/board/${board.id}`}
+              key={board.id}
+              className="bg-white shadow-md rounded-xl p-4 w-72"
+            >
+              <img
+                src={board.cover}
+                alt=""
+                className="rounded-xl w-full h-40 object-cover"
+              />
+              <h2 className="text-xl font-semibold mt-4">{board.title}</h2>
+            </Link>
+          ))}
+        </div>
       </div>
     </Layout>
   );

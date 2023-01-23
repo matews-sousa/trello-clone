@@ -10,7 +10,7 @@ const Layout = ({ boardTitle, children }: Props) => {
   return (
     <>
       <Navbar boardTitle={boardTitle} />
-      <main className="mx-auto mt-36">{children}</main>
+      <main className=" mx-auto mt-36">{children}</main>
     </>
   );
 };
