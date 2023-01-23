@@ -24,18 +24,25 @@ import { db } from "@/lib/firebase";
 import AddButton from "@/components/add-button";
 import find from "@/utils/find";
 import Item from "@/components/item";
+import Modal from "@/components/modal";
+import { HiOutlineX } from "react-icons/hi";
 
 type BoardState = Omit<IBoard, "lists">;
 
 const BoardPage = () => {
   const router = useRouter();
+  console.log(router);
   const { id } = router.query;
   const [activeItem, setActiveItem] = useState<IItem | null | undefined>(null);
   const [board, setBoard] = useState<BoardState>();
   const [lists, setLists] = useState<IList[] | null>(null);
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(TouchSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: { delay: 100, tolerance: 5 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 100, tolerance: 5 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -201,6 +208,16 @@ const BoardPage = () => {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
+        {router.query.item_id && (
+          <Modal onClose={() => router.push(router.asPath.split("?")[0])}>
+            <div className="relative bg-white h-[90vh] w-full rounded-sm p-5">
+              <button className="btn w-10 h-10 absolute right-4 top-4 p-0">
+                <HiOutlineX className="w-6 h-6" />
+              </button>
+              <h1>Modal</h1>
+            </div>
+          </Modal>
+        )}
         <div className="flex items-start gap-10 px-10 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-500 hover:scrollbar-thumb-gray-600 scrollbar-track-gray-300 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
           {lists &&
             lists?.map((list) => (
