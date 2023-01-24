@@ -4,7 +4,13 @@ import { CSS } from "@dnd-kit/utilities";
 import { IItem } from "@/types/IBoard";
 import Item from "./item";
 
-const DraggableItem = ({ item }: { item: IItem }) => {
+const DraggableItem = ({
+  item,
+  listTitle,
+}: {
+  item: IItem;
+  listTitle?: string;
+}) => {
   const {
     attributes,
     listeners,
@@ -30,7 +36,7 @@ const DraggableItem = ({ item }: { item: IItem }) => {
         transition,
       }}
     >
-      <Item item={item} isDragging={isDragging} />
+      <Item item={item} listTitle={listTitle} isDragging={isDragging} />
     </li>
   );
 };

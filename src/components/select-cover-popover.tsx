@@ -27,12 +27,12 @@ const SelectCoverPopover = ({ selectImage }: Props) => {
   };
 
   return (
-    <Popover className="relative z-50">
-      <Popover.Button className="w-full btn">
+    <Popover className="relative">
+      <Popover.Button className="w-full btn bg-gray-200 hover:bg-gray-300 text-black">
         <HiPhotograph />
         <span>Cover</span>
       </Popover.Button>
-      <Popover.Panel className="absolute p-4 top-12 bg-white border border-gray-400 rounded-2xl w-full max-w-sm ">
+      <Popover.Panel className="absolute p-4 top-12 bg-white border border-gray-400 rounded-2xl w-56 origin-top-right z-50">
         <h4 className="font-medium">Photo Search</h4>
         <p className="text-sm mb-2">Search Unsplash for photos</p>
         <form className="relative" onSubmit={searchImages}>
@@ -51,10 +51,10 @@ const SelectCoverPopover = ({ selectImage }: Props) => {
           {images?.map((image) => (
             <img
               key={image.id}
-              src={image.urls.small}
+              src={image.urls.thumb}
               alt={image.description}
               className="w-full h-24 object-cover rounded-sm hover:ring-2 ring-blue-400 cursor-pointer"
-              onClick={() => selectImage(image.urls.small)}
+              onClick={() => selectImage(image.urls.thumb)}
             />
           ))}
         </div>

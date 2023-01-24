@@ -62,7 +62,7 @@ const DroppableList = ({ list, addFn, deleteFn }: Props) => {
           className="h-[60vh] flex flex-col gap-2 overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 hover:scrollbar-thumb-gray-600 scrollbar-track-gray-300 scrollbar-thumb-rounded-full scrollbar-track-rounded-full"
         >
           {list.items?.map((item) => (
-            <DraggableItem key={item.id} item={item} />
+            <DraggableItem key={item.id} item={item} listTitle={list.title} />
           ))}
         </ul>
       </SortableContext>

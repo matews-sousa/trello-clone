@@ -1,6 +1,8 @@
 export interface IItem {
   id: string;
   title: string;
+  cover?: string;
+  description?: string;
 }
 
 export interface IList {

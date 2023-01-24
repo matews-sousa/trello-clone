@@ -5,18 +5,19 @@ import React from "react";
 
 interface Props {
   item: IItem;
+  listTitle?: string;
   isDragging?: boolean;
   dragOverlay?: boolean;
 }
 
-const Item = ({ item, isDragging, dragOverlay }: Props) => {
+const Item = ({ item, listTitle, isDragging, dragOverlay }: Props) => {
   const { asPath } = useRouter();
 
   return (
     <Link
       href={{
         pathname: asPath,
-        query: { item_id: item.id },
+        query: { item_id: item.id, list: listTitle },
       }}
       className={`inline-block w-64 p-2 bg-white rounded-md shadow-md hover:bg-gray-100 ${
         isDragging &&
@@ -26,6 +27,14 @@ const Item = ({ item, isDragging, dragOverlay }: Props) => {
         cursor: dragOverlay ? "grabbing" : "pointer",
       }}
     >
+      {item.cover && !isDragging && (
+        <img
+          src={item.cover}
+          alt=""
+          className="w-full h-44 object-cover rounded-md mb-2"
+        />
+      )}
+      {isDragging && <div className="w-full h-44"></div>}
       <h3 className="text-lg">{item.title}</h3>
     </Link>
   );

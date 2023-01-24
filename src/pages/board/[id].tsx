@@ -35,10 +35,11 @@ import find from "@/utils/find";
 import Item from "@/components/item";
 import Modal from "@/components/modal";
 import { HiOutlineX } from "react-icons/hi";
+import ItemDetails from "@/components/item-details";
 
 const BoardPage = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, item_id } = router.query;
   const [activeItem, setActiveItem] = useState<IItem | null | undefined>(null);
   const [board, setBoard] = useState<IBoard>();
   const [lists, setLists] = useState<IList[] | null>(null);
@@ -65,6 +66,7 @@ const BoardPage = () => {
         return {
           id: docSnap.id,
           title: docSnap.data()?.title,
+          cover: docSnap.data()?.cover,
           description: docSnap.data()?.description,
         };
       }),
@@ -255,14 +257,9 @@ const BoardPage = () => {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        {router.query.item_id && (
+        {item_id && (
           <Modal onClose={() => router.push(router.asPath.split("?")[0])}>
-            <div className="relative bg-white h-[90vh] w-full rounded-sm p-5">
-              <button className="btn w-10 h-10 absolute right-4 top-4 p-0">
-                <HiOutlineX className="w-6 h-6" />
-              </button>
-              <h1>Modal</h1>
-            </div>
+            <ItemDetails id={item_id as string} />
           </Modal>
         )}
         <div className="flex items-start gap-10 px-10 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-500 hover:scrollbar-thumb-gray-600 scrollbar-track-gray-300 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
