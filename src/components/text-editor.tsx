@@ -31,17 +31,19 @@ const TextEditor = ({
       <EditorContent editor={editor} />
       <div className="mt-2 flex gap-4">
         <button
-          className="btn bg-gray-200 hover:bg-gray-300 text-black"
-          onClick={() => setIsEditing(false)}
-        >
-          Cancel
-        </button>
-        <button
           className="btn"
           onClick={() => updateDescription(editor?.getHTML())}
         >
           Save
         </button>
+        {description && (
+          <button
+            className="btn bg-transparent hover:bg-gray-200 text-black shadow-none font-normal"
+            onClick={() => setIsEditing(false)}
+          >
+            Cancel
+          </button>
+        )}
       </div>
     </div>
   );
