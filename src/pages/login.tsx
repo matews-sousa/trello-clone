@@ -10,6 +10,8 @@ const Login = () => {
     if (!isLoading && user) router.push("/");
   }, [user, isLoading]);
 
+  if (!isLoading && user) return null;
+
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-xl h-2/3 bg-white rounded-lg p-12 shadow">

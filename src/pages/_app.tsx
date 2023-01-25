@@ -1,11 +1,34 @@
+import { useEffect } from "react";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/router";
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) router.push("/login");
+  }, [user, isLoading]);
+
+  return <>{!isLoading && user && children}</>;
+};
+
+const noAuthRequired = ["/login"];
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+
   return (
     <AuthProvider>
-      <Component {...pageProps} />
+      {noAuthRequired.includes(router.pathname) ? (
+        <Component {...pageProps} />
+      ) : (
+        <ProtectedRoute>
+          <Component {...pageProps} />
+        </ProtectedRoute>
+      )}
     </AuthProvider>
   );
 }

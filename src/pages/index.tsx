@@ -12,6 +12,7 @@ export default function Home() {
   const [boards, setBoards] = useState<IBoard[]>([]);
 
   useEffect(() => {
+    if (!user) return;
     const q = query(
       collection(db, "boards"),
       where("ownerId", "==", user?.uid),
@@ -22,8 +23,10 @@ export default function Home() {
           id: doc.id,
           ...doc.data(),
         };
-      });
-      setBoards(boards as IBoard[]);
+      }) as IBoard[];
+      setBoards(
+        boards.sort((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf()),
+      );
     });
     return () => unsub();
   }, []);

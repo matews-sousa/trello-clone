@@ -27,9 +27,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = async () => {
-    await signOut(auth);
     setUser(null);
-    return;
+    return await signOut(auth);
   };
 
   useEffect(() => {
