@@ -34,7 +34,7 @@ const Item = ({ item, listTitle, isDragging, dragOverlay }: Props) => {
           className="w-full h-44 object-cover rounded-md mb-2"
         />
       )}
-      {isDragging && <div className="w-full h-44"></div>}
+      {item.cover && isDragging && <div className="w-full h-44"></div>}
       <h3 className="text-lg">{item.title}</h3>
     </Link>
   );
