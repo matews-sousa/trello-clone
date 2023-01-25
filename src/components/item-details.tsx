@@ -59,12 +59,16 @@ const ItemDetails = ({ id }: Props) => {
     }
   }, [cover]);
 
+  if (!data) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="relative bg-gray-100 min-h-[90vh] w-full max-w-3xl rounded-sm p-5">
       <button
         className="btn w-10 h-10 absolute right-2 top-2 p-0 z-20"
         onClick={() => {
-          router.push(router.asPath.split("?")[0]);
+          router.back();
         }}
       >
         <HiOutlineX className="w-6 h-6" />

@@ -38,7 +38,10 @@ export default function Home() {
         <div className="flex gap-6 mt-6">
           {boards.map((board) => (
             <Link
-              href={`/board/${board.id}`}
+              href={{
+                pathname: `/board/${board.id}`,
+                query: { board_title: board.title },
+              }}
               key={board.id}
               className="bg-white shadow-md rounded-xl p-4 w-72"
             >

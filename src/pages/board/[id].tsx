@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -6,16 +6,12 @@ import {
   closestCenter,
   useSensor,
   useSensors,
-  DragStartEvent,
-  DragEndEvent,
-  DragOverEvent,
   TouchSensor,
   DragOverlay,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import DroppableList from "@/components/droppable-list";
-import { insertAtIndex, removeAtIndex, arrayMove } from "@/utils/array";
-import { IBoard, IItem, IList } from "@/types/IBoard";
+import { IList } from "@/types/IBoard";
 import Layout from "@/components/layout";
 import { useRouter } from "next/router";
 import {
@@ -24,25 +20,28 @@ import {
   deleteDoc,
   doc,
   getDoc,
-  onSnapshot,
-  query,
   updateDoc,
-  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import AddButton from "@/components/add-button";
-import find from "@/utils/find";
 import Item from "@/components/item";
 import Modal from "@/components/modal";
-import { HiOutlineX } from "react-icons/hi";
 import ItemDetails from "@/components/item-details";
+import useLists from "@/hooks/useLists";
+import useDragAndDrop from "@/hooks/useDragAndDrop";
 
 const BoardPage = () => {
   const router = useRouter();
-  const { id, item_id } = router.query;
-  const [activeItem, setActiveItem] = useState<IItem | null | undefined>(null);
-  const [board, setBoard] = useState<IBoard>();
-  const [lists, setLists] = useState<IList[] | null>(null);
+  const { id, board_title, item_id } = router.query;
+  const { lists, setLists } = useLists(id as string);
+  const {
+    activeItem,
+    handleDragStart,
+    handleDragCancel,
+    handleDragOver,
+    handleDragEnd,
+  } = useDragAndDrop(lists, setLists);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { delay: 100, tolerance: 5 },
@@ -54,63 +53,6 @@ const BoardPage = () => {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
-
-  const getItemsFromArrayOfIds = async (
-    itemsIds: string[],
-  ): Promise<IItem[]> => {
-    const items = await Promise.all(
-      itemsIds.map(async (id) => {
-        const docRef = doc(db, "items", id);
-        const docSnap = await getDoc(docRef);
-
-        return {
-          id: docSnap.id,
-          title: docSnap.data()?.title,
-          cover: docSnap.data()?.cover,
-          description: docSnap.data()?.description,
-        };
-      }),
-    );
-    return items;
-  };
-
-  const getBoardDoc = async (id: string) => {
-    const doRef = doc(db, "boards", id);
-    const docSnap = await getDoc(doRef);
-    if (docSnap.exists()) {
-      const board = {
-        id: docSnap.id,
-        cover: docSnap.data().cover,
-        title: docSnap.data().title,
-        createdAt: docSnap.data().createdAt,
-      } as IBoard;
-      setBoard(board);
-    }
-  };
-
-  useEffect(() => {
-    getBoardDoc(id as string);
-
-    const q = query(collection(db, "lists"), where("boardId", "==", id));
-    const unsub = onSnapshot(q, async (querySnapshot) => {
-      const _lists = await Promise.all(
-        querySnapshot.docs.map(async (doc) => {
-          const items = await getItemsFromArrayOfIds(doc.data().itemsIds);
-          return {
-            id: doc.id,
-            title: doc.data().title,
-            createdAt: doc.data().createdAt,
-            items: items,
-          } as IList;
-        }),
-      );
-      setLists(
-        _lists.sort((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf()),
-      );
-    });
-
-    return () => unsub();
-  }, [id]);
 
   useEffect(() => {
     if (!lists) return;
@@ -142,113 +84,21 @@ const BoardPage = () => {
     return updatedLists;
   };
 
-  const handleDragStart = (event: DragStartEvent) => {
-    if (!lists) return;
-    const activeList = find(
-      lists,
-      event.active.data.current?.sortable.containerId,
+  if (!lists) {
+    return (
+      <Layout boardTitle={board_title as string}>
+        <div className="flex items-center justify-center w-full h-full">
+          <div
+            className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-gray-500 border-r-gray-500 animate-spin"
+            aria-label="Loading..."
+          ></div>
+        </div>
+      </Layout>
     );
-    const item = activeList?.items[event.active.data.current?.sortable.index];
-
-    setActiveItem(item);
-  };
-  const handleDragCancel = () => setActiveItem(null);
-
-  const handleDragOver = ({ active, over }: DragOverEvent) => {
-    if (!over?.id || !lists) return;
-
-    const activeListId = active.data.current?.sortable.containerId;
-    const overListId = over.data.current?.sortable.containerId || over.id;
-    const activeList = find(lists, activeListId);
-    const overList = find(lists, overListId);
-
-    if (!activeList || !overList) return;
-
-    if (activeListId !== overListId) {
-      setLists((prev) => {
-        if (!prev) return prev;
-        const activeItemIndex = active.data.current?.sortable.index;
-        const overItemIndex =
-          over.id in overList.items.map((item) => item.id)
-            ? overList.items.length + 1
-            : over.data.current?.sortable.index;
-
-        const newLists = prev.map((list) => {
-          if (list.id === overListId) {
-            return {
-              ...list,
-              items: insertAtIndex(
-                list.items,
-                overItemIndex,
-                activeList.items[activeItemIndex],
-              ),
-            };
-          } else if (list.id === activeListId) {
-            return {
-              ...list,
-              items: removeAtIndex(list.items, activeItemIndex),
-            };
-          }
-          return list;
-        });
-        return newLists;
-      });
-    }
-  };
-
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over || !lists) {
-      setActiveItem(null);
-      return;
-    }
-
-    if (active.id !== over.id) {
-      const activeListId = active.data.current?.sortable.containerId;
-      const overListId = over.data.current?.sortable.containerId || over.id;
-      const activeList = find(lists, activeListId);
-      const overList = find(lists, overListId);
-      if (!activeList || !overList) return;
-      const activeItemIndex = active.data.current?.sortable.index;
-      const overItemIndex =
-        over.id in overList.items.map((item) => item.id)
-          ? overList.items.length + 1
-          : over.data.current?.sortable.index;
-
-      setLists((prev) => {
-        if (!prev) return prev;
-        const newLists = prev.map((list) => {
-          if (list.id === overListId) {
-            return {
-              ...list,
-              items: arrayMove(list.items, activeItemIndex, overItemIndex),
-            };
-          } else {
-            if (list.id === overListId) {
-              return {
-                ...list,
-                items: insertAtIndex(
-                  list.items,
-                  overItemIndex,
-                  activeList.items[activeItemIndex],
-                ),
-              };
-            } else if (list.id === activeListId) {
-              return {
-                ...list,
-                items: removeAtIndex(list.items, activeItemIndex),
-              };
-            }
-          }
-          return list;
-        });
-        return newLists;
-      });
-    }
-    setActiveItem(null);
-  };
+  }
 
   return (
-    <Layout boardTitle={board?.title}>
+    <Layout boardTitle={board_title as string}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -258,7 +108,7 @@ const BoardPage = () => {
         onDragEnd={handleDragEnd}
       >
         {item_id && (
-          <Modal onClose={() => router.push(router.asPath.split("?")[0])}>
+          <Modal onClose={() => router.back()}>
             <ItemDetails id={item_id as string} />
           </Modal>
         )}
