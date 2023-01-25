@@ -14,4 +14,12 @@
   .btn {
     @apply px-4 py-2 text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-lg flex items-center justify-center space-x-2 font-semibold;
   }
+
+  .editor-btn {
+    @apply p-1 hover:bg-gray-200 rounded-md cursor-pointer;
+  }
+
+  .is-active {
+    @apply bg-gray-900 hover:bg-gray-900 text-white;
+  }
 }

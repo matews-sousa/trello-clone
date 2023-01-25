@@ -13,13 +13,11 @@ const Modal = ({ onClose, children }: Props) => {
       static
       open={true}
       onClose={onClose}
-      className="fixed inset-0 z-10 flex items-center justify-center overflow-auto"
+      className="fixed inset-0 z-10 overflow-auto"
     >
       <Dialog.Overlay className="fixed inset-0 bg-gray-800/60" />
 
-      <div className="relative flex items-center justify-center w-full px-5">
-        {children}
-      </div>
+      <div className="relative flex justify-center w-full p-5">{children}</div>
     </Dialog>
   );
 };
