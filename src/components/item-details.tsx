@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect, useRef } from "react";
 import { HiOutlineX } from "react-icons/hi";
 import { MdOutlineDescription } from "react-icons/md";
+import Loader from "./loader";
 import SelectCoverPopover from "./select-cover-popover";
 import TextEditor from "./text-editor";
 
@@ -60,7 +61,11 @@ const ItemDetails = ({ id }: Props) => {
   }, [cover]);
 
   if (!data) {
-    return <div>Loading...</div>;
+    return (
+      <div className="relative bg-gray-100 min-h-[90vh] w-full max-w-3xl rounded-sm p-5">
+        <Loader />
+      </div>
+    );
   }
 
   return (

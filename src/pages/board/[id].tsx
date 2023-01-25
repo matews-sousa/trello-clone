@@ -29,6 +29,7 @@ import Modal from "@/components/modal";
 import ItemDetails from "@/components/item-details";
 import useLists from "@/hooks/useLists";
 import useDragAndDrop from "@/hooks/useDragAndDrop";
+import Loader from "@/components/loader";
 
 const BoardPage = () => {
   const router = useRouter();
@@ -87,12 +88,7 @@ const BoardPage = () => {
   if (!lists) {
     return (
       <Layout boardTitle={board_title as string}>
-        <div className="flex items-center justify-center w-full h-full">
-          <div
-            className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-gray-500 border-r-gray-500 animate-spin"
-            aria-label="Loading..."
-          ></div>
-        </div>
+        <Loader />
       </Layout>
     );
   }

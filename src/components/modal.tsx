@@ -17,7 +17,9 @@ const Modal = ({ onClose, children }: Props) => {
     >
       <Dialog.Overlay className="fixed inset-0 bg-gray-800/60" />
 
-      <div className="relative flex justify-center w-full p-5">{children}</div>
+      <Dialog.Panel className="relative flex justify-center w-full p-5">
+        {children}
+      </Dialog.Panel>
     </Dialog>
   );
 };
