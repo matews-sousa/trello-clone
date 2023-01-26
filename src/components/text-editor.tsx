@@ -19,7 +19,7 @@ const TextEditor = ({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm focus:outline-none border border-gray-300 rounded-b-sm p-2 bg-white",
+          "prose prose-sm focus:outline-none border border-gray-300 rounded-b-sm p-2 bg-white max-w-full",
       },
     },
     content: description,

@@ -28,11 +28,11 @@ const SelectCoverPopover = ({ selectImage }: Props) => {
 
   return (
     <Popover className="relative">
-      <Popover.Button className="w-full btn bg-gray-200 hover:bg-gray-300 text-black">
+      <Popover.Button className="p-2 rounded-sm bg-gray-200 hover:bg-gray-300 w-full shadow flex items-center gap-2">
         <HiPhotograph />
         <span>Cover</span>
       </Popover.Button>
-      <Popover.Panel className="absolute p-4 top-12 bg-white border border-gray-400 rounded-2xl w-56 origin-top-right z-50">
+      <Popover.Panel className="absolute mt-2 bg-white ring-1 ring-gray-300 shadow rounded-sm p-2 w-72 z-50">
         <h4 className="font-medium">Photo Search</h4>
         <p className="text-sm mb-2">Search Unsplash for photos</p>
         <form className="relative" onSubmit={searchImages}>

@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { IList } from "@/types/IBoard";
+import { IBoard, IList } from "@/types/IBoard";
 import getItemsFromArrayOfIds from "@/utils/getItemsFromArrayOfIds";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 
 const useLists = (boardId: string) => {
   const [lists, setLists] = useState<IList[] | null>(null);
+  const [board, setBoard] = useState<IBoard | null>(null);
 
   useEffect(() => {
     if (!boardId) return;
+    const docRef = doc(db, "boards", boardId.split("?")[0]);
+    const unsubBoard = onSnapshot(docRef, (doc) => {
+      setBoard(doc.data() as IBoard);
+    });
+
     const q = query(
       collection(db, "lists"),
       where("boardId", "==", boardId.split("?")[0]),
@@ -30,10 +36,14 @@ const useLists = (boardId: string) => {
       );
     });
 
-    return () => unsub();
+    return () => {
+      unsub();
+      unsubBoard();
+    };
   }, [boardId]);
 
   return {
+    board,
     lists,
     setLists,
   };

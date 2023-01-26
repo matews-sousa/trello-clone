@@ -34,7 +34,7 @@ import Loader from "@/components/loader";
 const BoardPage = () => {
   const router = useRouter();
   const { id, board_title, item_id } = router.query;
-  const { lists, setLists } = useLists(id as string);
+  const { board, lists, setLists } = useLists(id as string);
   const {
     activeItem,
     handleDragStart,
@@ -105,7 +105,7 @@ const BoardPage = () => {
       >
         {item_id && (
           <Modal onClose={() => router.back()}>
-            <ItemDetails id={item_id as string} />
+            <ItemDetails id={item_id as string} labels={board?.labels} />
           </Modal>
         )}
         <div className="flex items-start gap-10 px-10 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-500 hover:scrollbar-thumb-gray-600 scrollbar-track-gray-300 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">

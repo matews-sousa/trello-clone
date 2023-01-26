@@ -12,9 +12,16 @@ export interface IList {
   items: IItem[];
 }
 
+export interface ILabel {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface IBoard {
   id: string;
   title: string;
   cover: string;
   createdAt: Date;
+  labels?: ILabel[];
 }

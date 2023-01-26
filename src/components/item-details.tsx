@@ -1,19 +1,21 @@
 import { db } from "@/lib/firebase";
-import { IItem } from "@/types/IBoard";
+import { IItem, ILabel } from "@/types/IBoard";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import React, { useState, useEffect, useRef } from "react";
 import { HiOutlineX } from "react-icons/hi";
 import { MdOutlineDescription } from "react-icons/md";
+import LabelsPopover from "./labels-popover";
 import Loader from "./loader";
 import SelectCoverPopover from "./select-cover-popover";
 import TextEditor from "./text-editor";
 
 interface Props {
   id: string;
+  labels?: ILabel[];
 }
 
-const ItemDetails = ({ id }: Props) => {
+const ItemDetails = ({ id, labels }: Props) => {
   const router = useRouter();
   const itemTitleRef = useRef<HTMLHeadingElement | null>(null);
   const docRef = doc(db, "items", id);
@@ -79,7 +81,7 @@ const ItemDetails = ({ id }: Props) => {
         <HiOutlineX className="w-6 h-6" />
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
         {(data?.cover || cover) && (
           <div className="relative col-span-4 w-full h-44 mb-2">
             <img
@@ -92,7 +94,7 @@ const ItemDetails = ({ id }: Props) => {
             </div>
           </div>
         )}
-        <div className="col-span-2">
+        <div className="col-span-3">
           <h2
             className="text-2xl font-semibold"
             contentEditable
@@ -146,10 +148,11 @@ const ItemDetails = ({ id }: Props) => {
         </div>
         <div className="col-span-1 mt-20">
           <h4 className="font-semibold">Actions</h4>
-          <div className="mt-4">
+          <div className="mt-2 flex flex-col space-y-3">
             {(!data?.cover || cover.length !== 0) && (
               <SelectCoverPopover selectImage={setCover} />
             )}
+            <LabelsPopover labels={labels} />
           </div>
         </div>
       </div>
