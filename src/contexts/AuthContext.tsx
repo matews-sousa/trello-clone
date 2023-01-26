@@ -4,9 +4,16 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
-  User,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+
+type User = {
+  uid: string;
+  displayName: string;
+  email: string;
+  photoURL: string;
+};
 
 interface AuthContextProps {
   user: User | null;
@@ -32,8 +39,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const _user = {
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+        } as Omit<User, "uid">;
+        await setDoc(doc(db, "users", user.uid), _user);
+        setUser({ uid: user.uid, ..._user });
+      }
       setIsLoading(false);
     });
 
