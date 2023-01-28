@@ -2,6 +2,7 @@ import { IItem } from "@/types/IBoard";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
+import { MdOutlineDescription } from "react-icons/md";
 
 interface Props {
   item: IItem;
@@ -36,6 +37,12 @@ const Item = ({ item, listTitle, isDragging, dragOverlay }: Props) => {
       )}
       {item.cover && isDragging && <div className="w-full h-44"></div>}
       <h3 className="text-lg">{item.title}</h3>
+      {item.description && (
+        <MdOutlineDescription
+          aria-label="This card has a description"
+          className={`mt-2 w-6 h-6 text-gray-400 ${isDragging && "invisible"}`}
+        />
+      )}
     </Link>
   );
 };
