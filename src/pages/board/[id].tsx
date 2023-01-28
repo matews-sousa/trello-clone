@@ -30,11 +30,13 @@ import ItemDetails from "@/components/item-details";
 import useLists from "@/hooks/useLists";
 import useDragAndDrop from "@/hooks/useDragAndDrop";
 import Loader from "@/components/loader";
+import { useAuth } from "@/contexts/AuthContext";
 
 const BoardPage = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const { id, board_title, item_id } = router.query;
-  const { lists, setLists } = useLists(id as string);
+  const { board, lists, setLists, loading } = useLists(id as string);
   const {
     activeItem,
     handleDragStart,
@@ -42,7 +44,6 @@ const BoardPage = () => {
     handleDragOver,
     handleDragEnd,
   } = useDragAndDrop(lists, setLists);
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { delay: 100, tolerance: 5 },
@@ -54,6 +55,17 @@ const BoardPage = () => {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
+
+  useEffect(() => {
+    if (!board || !user) return;
+    const isOwner = board?.ownerId === user?.uid;
+    const isMember = board?.members.some((member) => member.uid === user?.uid);
+    if (!loading) {
+      if (!isMember && !isOwner) {
+        router.push("/");
+      }
+    }
+  }, [loading, board]);
 
   useEffect(() => {
     if (!lists) return;
@@ -85,7 +97,7 @@ const BoardPage = () => {
     return updatedLists;
   };
 
-  if (!lists) {
+  if (loading) {
     return (
       <Layout boardTitle={board_title as string}>
         <Loader />
@@ -95,6 +107,19 @@ const BoardPage = () => {
 
   return (
     <Layout boardTitle={board_title as string}>
+      <div className="px-10 mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">{board?.title}</h1>
+        <div className="flex">
+          <img src={user?.photoURL} className="h-10 w-10 rounded-full" />
+          {board?.members.map((member) => (
+            <img
+              key={member.uid}
+              src={member.photoURL}
+              className="h-10 w-10 rounded-full"
+            />
+          ))}
+        </div>
+      </div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

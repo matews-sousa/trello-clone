@@ -8,7 +8,7 @@ import {
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 
-type User = {
+export type User = {
   uid: string;
   displayName: string;
   email: string;

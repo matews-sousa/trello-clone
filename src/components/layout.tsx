@@ -15,7 +15,7 @@ const Layout = ({ boardTitle, children }: Props) => {
         <link rel="icon" href="/Logo-small.svg" />
       </Head>
       <Navbar boardTitle={boardTitle} />
-      <main className=" mx-auto mt-36">{children}</main>
+      <main className="mx-auto mt-24">{children}</main>
     </>
   );
 };

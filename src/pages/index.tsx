@@ -2,59 +2,100 @@ import { useEffect, useState } from "react";
 import Layout from "@/components/layout";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, User } from "@/contexts/AuthContext";
 import AddBoardModal from "@/components/add-board-modal";
-import Link from "next/link";
 import { IBoard } from "@/types/IBoard";
+import getDocsFromArrayOfIds from "@/utils/getDocsFromArrayOfIds";
+import getDocData from "@/utils/getDocData";
+import BoardCard from "@/components/board-card";
 
 export default function Home() {
   const { user } = useAuth();
-  const [boards, setBoards] = useState<IBoard[]>([]);
+  const [myBoards, setMyBoards] = useState<IBoard[]>([]);
+  const [memberBoards, setMemberBoards] = useState<IBoard[]>([]);
 
   useEffect(() => {
     if (!user) return;
-    const q = query(
+    const qMyBoards = query(
       collection(db, "boards"),
       where("ownerId", "==", user?.uid),
     );
-    const unsub = onSnapshot(q, (querySnapshot) => {
-      const boards = querySnapshot.docs.map((doc) => {
-        return {
-          id: doc.id,
-          ...doc.data(),
-        };
-      }) as IBoard[];
-      setBoards(
-        boards.sort((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf()),
+    const unsubMyBoards = onSnapshot(qMyBoards, async (querySnapshot) => {
+      const _boards = await Promise.all(
+        querySnapshot.docs.map(async (doc) => {
+          const members = await getDocsFromArrayOfIds<User>(
+            "users",
+            doc.data().membersIds,
+          );
+          const owner = await getDocData<User>("users", doc.data().ownerId);
+          return {
+            id: doc.id,
+            ...doc.data(),
+            members,
+            owner,
+          } as IBoard;
+        }),
+      );
+      setMyBoards(
+        _boards.sort((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf()),
       );
     });
-    return () => unsub();
+
+    const qMemberBoards = query(
+      collection(db, "boards"),
+      where("membersIds", "array-contains", user?.uid),
+    );
+    const unsubMemberBoards = onSnapshot(
+      qMemberBoards,
+      async (querySnapshot) => {
+        const _boards = await Promise.all(
+          querySnapshot.docs.map(async (doc) => {
+            const members = await getDocsFromArrayOfIds<User>(
+              "users",
+              doc.data().membersIds,
+            );
+            const owner = await getDocData<User>("users", doc.data().ownerId);
+            return {
+              id: doc.id,
+              ...doc.data(),
+              members,
+              owner,
+            } as IBoard;
+          }),
+        );
+        setMemberBoards(
+          _boards.sort((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf()),
+        );
+      },
+    );
+    return () => {
+      unsubMyBoards();
+      unsubMemberBoards();
+    };
   }, []);
 
   return (
     <Layout>
-      <div className="px-10">
+      <div className="px-10 py-10">
         <header className="flex justify-between">
-          <h1 className="text-3xl font-semibold">All Boards</h1>
+          <h1 className="text-3xl font-semibold">My Boards</h1>
           <AddBoardModal />
         </header>
-        <div className="flex gap-6 mt-6">
-          {boards.map((board) => (
-            <Link
-              href={{
-                pathname: `/board/${board.id}`,
-                query: { board_title: board.title },
-              }}
-              key={board.id}
-              className="bg-white shadow-md rounded-xl p-4 w-72"
-            >
-              <img
-                src={board.cover}
-                alt=""
-                className="rounded-xl w-full h-40 object-cover"
-              />
-              <h2 className="text-xl font-semibold mt-4">{board.title}</h2>
-            </Link>
+        <div className="flex flex-wrap gap-6 mt-6">
+          {myBoards.map((board) => (
+            <BoardCard key={board.id} board={board} />
+          ))}
+        </div>
+        {memberBoards.length > 0 && (
+          <header>
+            <h1 className="text-3xl font-semibold mt-10">
+              Boards that you are member
+            </h1>
+          </header>
+        )}
+        <div className="flex flex-wrap gap-6 mt-6">
+          {memberBoards.map((board) => (
+            <BoardCard key={board.id} board={board} />
           ))}
         </div>
       </div>

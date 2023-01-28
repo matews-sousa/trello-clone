@@ -24,7 +24,7 @@ const DroppableList = ({ list, addFn, deleteFn }: Props) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold">{list.title}</h2>
+        <h2 className="text-xl font-semibold">{list.title}</h2>
         <Menu as="div" className="relative">
           <Menu.Button>
             <HiDotsHorizontal />

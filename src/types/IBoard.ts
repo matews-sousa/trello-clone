@@ -1,3 +1,5 @@
+import { User } from "@/contexts/AuthContext";
+
 export interface IItem {
   id: string;
   title: string;
@@ -17,4 +19,7 @@ export interface IBoard {
   title: string;
   cover: string;
   createdAt: Date;
+  ownerId: string;
+  members: User[];
+  owner?: User;
 }
