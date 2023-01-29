@@ -55,29 +55,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email: string,
     password: string,
   ): Promise<void> => {
-    try {
-      const userCredentials = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
-      await setDoc(doc(db, "users", userCredentials.user.uid), {
-        displayName,
-        email,
-        photoURL: userCredentials.user.photoURL,
-      });
-      setUser({
-        uid: userCredentials.user.uid,
-        displayName,
-        email,
-        photoURL: userCredentials.user.photoURL,
-      });
-      return await updateProfile(userCredentials.user, {
-        displayName,
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    const userCredentials = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
+    await setDoc(doc(db, "users", userCredentials.user.uid), {
+      displayName,
+      email,
+      photoURL: userCredentials.user.photoURL,
+    });
+    setUser({
+      uid: userCredentials.user.uid,
+      displayName,
+      email,
+      photoURL: userCredentials.user.photoURL,
+    });
+    return await updateProfile(userCredentials.user, {
+      displayName,
+    });
   };
 
   const signIn = async (
@@ -94,6 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
+      setIsLoading(true);
       if (user) {
         const _user = {
           displayName: user.displayName,
@@ -102,6 +99,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } as Omit<User, "uid">;
         await setDoc(doc(db, "users", user.uid), _user);
         setUser({ uid: user.uid, ..._user });
+      } else {
+        setUser(null);
       }
       setIsLoading(false);
     });

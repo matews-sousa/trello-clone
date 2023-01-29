@@ -1,6 +1,7 @@
 import { IBoard } from "@/types/IBoard";
 import Link from "next/link";
 import React from "react";
+import Avatar from "./avatar";
 
 interface Props {
   board: IBoard;
@@ -23,14 +24,17 @@ const BoardCard = ({ board }: Props) => {
       />
       <h2 className="text-xl font-semibold mt-4">{board.title}</h2>
       <div className="mt-4 flex gap-2">
-        <img src={board.owner?.photoURL} className="h-10 w-10 rounded-md" />
+        <Avatar
+          photoURL={board.owner?.photoURL}
+          displayName={board.owner.displayName}
+        />
         {board.members.map(
           (member, i) =>
             i < 3 && (
-              <img
+              <Avatar
                 key={member.uid}
-                src={member.photoURL}
-                className="h-10 w-10 rounded-md"
+                photoURL={member.photoURL}
+                displayName={member.displayName}
               />
             ),
         )}

@@ -11,7 +11,7 @@ const Layout = ({ boardTitle, children }: Props) => {
   return (
     <>
       <Head>
-        <title>Thullo {boardTitle && `| ${boardTitle} Board`}</title>
+        <title>{boardTitle && `${boardTitle} | `}Thullo</title>
         <link rel="icon" href="/Logo-small.svg" />
       </Head>
       <Navbar boardTitle={boardTitle} />

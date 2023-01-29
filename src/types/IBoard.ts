@@ -21,5 +21,5 @@ export interface IBoard {
   createdAt: Date;
   ownerId: string;
   members: User[];
-  owner?: User;
+  owner: User;
 }
