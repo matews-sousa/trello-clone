@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{!isLoading && user && children}</>;
 };
 
-const noAuthRequired = ["/login"];
+const noAuthRequired = ["/login", "/sign-up"];
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();

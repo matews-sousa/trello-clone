@@ -1,9 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 
 const Login = () => {
-  const { signInWithGoogle, user, isLoading } = useAuth();
+  const { signInWithGoogle, signInWithGithub, signIn, user, isLoading } =
+    useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -24,13 +26,22 @@ const Login = () => {
           >
             Continue with Google
           </button>
-          <button className="text-center w-full py-3 rounded-full bg-gray-500 text-white font-semibold">
+          <button
+            className="text-center w-full py-3 rounded-full bg-gray-500 text-white font-semibold"
+            onClick={signInWithGithub}
+          >
             Continue with Github
           </button>
-          <button className="text-center w-full py-3 rounded-full bg-blue-500 text-white font-semibold">
-            Continue with Facebook
-          </button>
         </div>
+        <p className="text-center text-gray-500 mt-6">
+          Do not have an account?{" "}
+          <Link
+            href="/sign-up"
+            className="text-blue-400 underline hover:text-blue-500"
+          >
+            Sign Up
+          </Link>
+        </p>
       </div>
     </div>
   );

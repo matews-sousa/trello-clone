@@ -3,7 +3,12 @@ import {
   onAuthStateChanged,
   signInWithPopup,
   GoogleAuthProvider,
+  GithubAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut,
+  UserCredential,
+  updateProfile,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
@@ -12,7 +17,7 @@ export type User = {
   uid: string;
   displayName: string;
   email: string;
-  photoURL: string;
+  photoURL?: string | null;
 };
 
 interface AuthContextProps {
@@ -20,6 +25,13 @@ interface AuthContextProps {
   isLoading: boolean;
   logout: () => Promise<void>;
   signInWithGoogle: () => void;
+  signInWithGithub: () => void;
+  signUp: (
+    displayName: string,
+    email: string,
+    password: string,
+  ) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<UserCredential>;
 }
 
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
@@ -31,6 +43,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider);
+  };
+
+  const signInWithGithub = () => {
+    const provider = new GithubAuthProvider();
+    signInWithPopup(auth, provider);
+  };
+
+  const signUp = async (
+    displayName: string,
+    email: string,
+    password: string,
+  ): Promise<void> => {
+    try {
+      const userCredentials = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      await setDoc(doc(db, "users", userCredentials.user.uid), {
+        displayName,
+        email,
+        photoURL: userCredentials.user.photoURL,
+      });
+      setUser({
+        uid: userCredentials.user.uid,
+        displayName,
+        email,
+        photoURL: userCredentials.user.photoURL,
+      });
+      return await updateProfile(userCredentials.user, {
+        displayName,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const signIn = async (
+    email: string,
+    password: string,
+  ): Promise<UserCredential> => {
+    return await signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = async () => {
@@ -60,6 +114,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     isLoading,
     logout,
     signInWithGoogle,
+    signInWithGithub,
+    signUp,
+    signIn,
   };
 
   return (
