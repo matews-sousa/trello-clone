@@ -31,12 +31,15 @@ import useLists from "@/hooks/useLists";
 import useDragAndDrop from "@/hooks/useDragAndDrop";
 import Loader from "@/components/loader";
 import { useAuth } from "@/contexts/AuthContext";
+import Avatar from "@/components/avatar";
+import AddMemberModal from "@/components/add-member-modal";
 
 const BoardPage = () => {
   const router = useRouter();
   const { user } = useAuth();
   const { id, board_title, item_id } = router.query;
   const { board, lists, setLists, loading } = useLists(id as string);
+  console.log(user, board);
   const {
     activeItem,
     handleDragStart,
@@ -58,8 +61,8 @@ const BoardPage = () => {
 
   useEffect(() => {
     if (!board || !user) return;
-    const isOwner = board?.ownerId === user?.uid;
-    const isMember = board?.members.some((member) => member.uid === user?.uid);
+    const isOwner = board?.ownerId === user?.id;
+    const isMember = board?.members.some((member) => member.id === user?.id);
     if (!loading) {
       if (!isMember && !isOwner) {
         router.push("/");
@@ -97,7 +100,7 @@ const BoardPage = () => {
     return updatedLists;
   };
 
-  if (loading) {
+  if (loading || !board) {
     return (
       <Layout boardTitle={board_title as string}>
         <Loader />
@@ -109,15 +112,19 @@ const BoardPage = () => {
     <Layout boardTitle={board_title as string}>
       <div className="px-10 mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">{board?.title}</h1>
-        <div className="flex">
-          <img src={user?.photoURL} className="h-10 w-10 rounded-full" />
+        <div className="flex gap-1">
+          <Avatar
+            photoURL={board?.owner.photoURL}
+            displayName={board?.owner.displayName}
+          />
           {board?.members.map((member) => (
-            <img
-              key={member.uid}
-              src={member.photoURL}
-              className="h-10 w-10 rounded-full"
+            <Avatar
+              key={member.id}
+              photoURL={member.photoURL}
+              displayName={member.displayName}
             />
           ))}
+          <AddMemberModal />
         </div>
       </div>
       <DndContext
@@ -129,7 +136,7 @@ const BoardPage = () => {
         onDragEnd={handleDragEnd}
       >
         {item_id && (
-          <Modal onClose={() => router.back()}>
+          <Modal open={true} onClose={() => router.back()}>
             <ItemDetails id={item_id as string} />
           </Modal>
         )}

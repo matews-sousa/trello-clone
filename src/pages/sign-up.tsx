@@ -102,7 +102,7 @@ const SignUp = () => {
                 {...register("name")}
                 type="text"
                 placeholder="Name"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400"
+                className="input"
               />
               <p className="text-xs text-red-400">{errors.name?.message}</p>
             </div>
@@ -111,7 +111,7 @@ const SignUp = () => {
                 {...register("email")}
                 type="text"
                 placeholder="Email"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400"
+                className="input"
               />
               <p className="text-xs text-red-400">{errors.email?.message}</p>
             </div>
@@ -120,7 +120,7 @@ const SignUp = () => {
                 {...register("password")}
                 type="password"
                 placeholder="Password"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400"
+                className="input"
               />
               <p className="text-xs text-red-400">{errors.password?.message}</p>
             </div>
@@ -129,7 +129,7 @@ const SignUp = () => {
                 {...register("confirmPassword")}
                 type="password"
                 placeholder="Confirm Password"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400"
+                className="input"
               />
               <p className="text-xs text-red-400">
                 {errors.confirmPassword?.message}

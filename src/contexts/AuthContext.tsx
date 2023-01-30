@@ -14,7 +14,7 @@ import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 
 export type User = {
-  uid: string;
+  id: string;
   displayName: string;
   email: string;
   photoURL?: string | null;
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       photoURL: userCredentials.user.photoURL,
     });
     setUser({
-      uid: userCredentials.user.uid,
+      id: userCredentials.user.uid,
       displayName,
       email,
       photoURL: userCredentials.user.photoURL,
@@ -96,9 +96,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           displayName: user.displayName,
           email: user.email,
           photoURL: user.photoURL,
-        } as Omit<User, "uid">;
+        } as Omit<User, "id">;
         await setDoc(doc(db, "users", user.uid), _user);
-        setUser({ uid: user.uid, ..._user });
+        setUser({ id: user.uid, ..._user });
       } else {
         setUser(null);
       }

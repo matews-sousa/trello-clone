@@ -4,6 +4,7 @@ import { IBoard, IItem, IList } from "@/types/IBoard";
 import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import getDocsFromArrayOfIds from "@/utils/getDocsFromArrayOfIds";
 import { User } from "@/contexts/AuthContext";
+import getDocData from "@/utils/getDocData";
 
 const useLists = (boardId: string) => {
   const [board, setBoard] = useState<IBoard | null>(null);
@@ -18,10 +19,12 @@ const useLists = (boardId: string) => {
         "users",
         doc.data()?.membersIds,
       );
+      const owner = await getDocData<User>("users", doc.data()?.ownerId);
       const _board = {
         id: doc.id,
         ...doc.data(),
-        members: members,
+        members,
+        owner,
       } as IBoard;
       setBoard(_board);
     });

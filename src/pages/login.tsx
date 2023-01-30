@@ -87,7 +87,7 @@ const Login = () => {
                 {...register("email")}
                 type="text"
                 placeholder="Email"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400"
+                className="input"
               />
               <p className="text-xs text-red-400">{errors.email?.message}</p>
             </div>
@@ -96,7 +96,7 @@ const Login = () => {
                 {...register("password")}
                 type="password"
                 placeholder="Password"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400"
+                className="input"
               />
               <p className="text-xs text-red-400">{errors.password?.message}</p>
             </div>

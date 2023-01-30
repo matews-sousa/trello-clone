@@ -18,7 +18,7 @@ export default function Home() {
     if (!user) return;
     const qMyBoards = query(
       collection(db, "boards"),
-      where("ownerId", "==", user?.uid),
+      where("ownerId", "==", user?.id),
     );
     const unsubMyBoards = onSnapshot(qMyBoards, async (querySnapshot) => {
       const _boards = await Promise.all(
@@ -43,7 +43,7 @@ export default function Home() {
 
     const qMemberBoards = query(
       collection(db, "boards"),
-      where("membersIds", "array-contains", user?.uid),
+      where("membersIds", "array-contains", user?.id),
     );
     const unsubMemberBoards = onSnapshot(
       qMemberBoards,
