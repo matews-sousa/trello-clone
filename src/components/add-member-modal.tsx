@@ -1,6 +1,7 @@
-import { User } from "@/contexts/AuthContext";
+import { useAuth, User } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import Avatar from "./avatar";
 import Loader from "./loader";
@@ -9,6 +10,9 @@ import Modal from "./modal";
 let searchTimeout: NodeJS.Timeout;
 
 const AddMemberModal = () => {
+  const { user } = useAuth();
+  const router = useRouter();
+  const { id, board_title } = router.query;
   const [isOpen, setIsOpen] = useState(false);
   const [usersResults, setUsersResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -39,15 +43,26 @@ const AddMemberModal = () => {
           ...doc.data(),
         } as User;
         users.push(_u);
-        console.log(_u);
       });
       setUsersResults(users);
       setIsSearching(false);
     }, 500);
   };
 
-  const handleAddMember = (id: string) => {
-    console.log("Added member " + id);
+  const handleInviteMember = async (memberId: string) => {
+    try {
+      await addDoc(collection(db, "notifications"), {
+        type: "invite",
+        from: user?.id,
+        to: memberId,
+        createdAt: new Date(),
+        read: false,
+        boardId: id,
+        message: `${user?.displayName} invited you to join board ${board_title}`,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -106,9 +121,9 @@ const AddMemberModal = () => {
                   </div>
                   <button
                     className="btn"
-                    onClick={() => handleAddMember(user.id)}
+                    onClick={() => handleInviteMember(user.id)}
                   >
-                    Add
+                    Invite
                   </button>
                 </div>
               ))

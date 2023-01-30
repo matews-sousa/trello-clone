@@ -20,6 +20,7 @@ export interface IBoard {
   cover: string;
   createdAt: Date;
   ownerId: string;
+  membersIds: string[];
   members: User[];
   owner: User;
 }

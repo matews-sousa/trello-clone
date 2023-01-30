@@ -37,9 +37,8 @@ import AddMemberModal from "@/components/add-member-modal";
 const BoardPage = () => {
   const router = useRouter();
   const { user } = useAuth();
-  const { id, board_title, item_id } = router.query;
+  const { id, item_id } = router.query;
   const { board, lists, setLists, loading } = useLists(id as string);
-  console.log(user, board);
   const {
     activeItem,
     handleDragStart,
@@ -102,14 +101,14 @@ const BoardPage = () => {
 
   if (loading || !board) {
     return (
-      <Layout boardTitle={board_title as string}>
+      <Layout>
         <Loader />
       </Layout>
     );
   }
 
   return (
-    <Layout boardTitle={board_title as string}>
+    <Layout>
       <div className="px-10 mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">{board?.title}</h1>
         <div className="flex gap-1">
