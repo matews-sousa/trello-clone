@@ -32,7 +32,7 @@ const BoardCard = ({ board }: Props) => {
           (member, i) =>
             i < 3 && (
               <Avatar
-                key={member.uid}
+                key={member.id}
                 photoURL={member.photoURL}
                 displayName={member.displayName}
               />
