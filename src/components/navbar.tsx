@@ -45,19 +45,23 @@ const Navbar = () => {
         <Popover className="relative">
           <Popover.Button
             aria-label="Notifications"
-            className="p-3 rounded-md bg-gray-200 hover:bg-gray-300 text-black relative focus:ring-1 focus:ring-gray-400 focus:outline-none"
+            className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 text-black relative focus:ring-1 focus:ring-gray-400 focus:outline-none"
           >
             <HiBell />
             {notifications.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+              <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full"></span>
             )}
           </Popover.Button>
-          <Popover.Panel className="absolute p-4 -translate-x-2/3 transform top-12 max-w-sm w-screen bg-white ring-1 ring-gray-400 rounded-sm z-50">
-            <h4 className="font-medium mb-4">Notifications</h4>
+          <Popover.Panel className="absolute -translate-x-2/3 transform top-12 max-w-sm w-screen bg-white ring-1 ring-gray-300 rounded-sm z-50">
+            <h4 className="font-medium border-b border-gray-300 p-4">
+              Notifications
+            </h4>
             {notifications.length === 0 ? (
-              <p className="text-gray-500 text-center">No notifications yet</p>
+              <p className="text-gray-500 text-center p-4">
+                No notifications yet
+              </p>
             ) : (
-              <ul className="mt-2">
+              <ul className="space-y-6 p-4">
                 {notifications.map((notification) => (
                   <Notification
                     key={notification.id}

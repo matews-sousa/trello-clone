@@ -7,9 +7,7 @@ import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import React from "react";
 import Avatar from "./avatar";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-dayjs.extend(relativeTime);
+import { formatDistanceToNow } from "date-fns";
 
 interface Props {
   notification: INotification;
@@ -48,7 +46,9 @@ const Notification = ({ notification }: Props) => {
     <li className="grid grid-cols-3">
       <div className="col-span-2">
         <span className="text-gray-500">
-          {dayjs(notification.date).toNow()}
+          {formatDistanceToNow(new Date(notification.createdAt.toDate()), {
+            addSuffix: true,
+          })}
         </span>
         <div className="flex items-center space-x-2">
           <Avatar
@@ -59,18 +59,22 @@ const Notification = ({ notification }: Props) => {
         </div>
       </div>
       <div className="flex items-center justify-end space-x-2 col-span-1">
-        <button
-          className="text-sm font-medium p-2 rounded-md bg-gray-100 hover:bg-gray-200"
-          onClick={() => handleJoin(notification)}
-        >
-          Join
-        </button>
-        <button
-          className="text-sm font-medium p-2 rounded-md bg-gray-100 hover:bg-gray-200"
-          onClick={() => handleDeny(notification)}
-        >
-          Deny
-        </button>
+        {notification.type === "invite" && (
+          <>
+            <button
+              className="text-sm font-medium p-2 rounded-md bg-gray-100 hover:bg-gray-200"
+              onClick={() => handleJoin(notification)}
+            >
+              Join
+            </button>
+            <button
+              className="text-sm font-medium p-2 rounded-md bg-gray-100 hover:bg-gray-200"
+              onClick={() => handleDeny(notification)}
+            >
+              Deny
+            </button>
+          </>
+        )}
       </div>
     </li>
   );

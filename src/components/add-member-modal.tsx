@@ -3,6 +3,8 @@ import { db } from "@/lib/firebase";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Avatar from "./avatar";
 import Loader from "./loader";
 import Modal from "./modal";
@@ -49,16 +51,24 @@ const AddMemberModal = () => {
     }, 500);
   };
 
+  const sendInviteNotification = async (memberId: string) => {
+    await addDoc(collection(db, "notifications"), {
+      type: "invite",
+      from: user?.id,
+      to: memberId,
+      createdAt: new Date(),
+      read: false,
+      boardId: id,
+      message: `${user?.displayName} invited you to join board ${board_title}`,
+    });
+  };
+
   const handleInviteMember = async (memberId: string) => {
     try {
-      await addDoc(collection(db, "notifications"), {
-        type: "invite",
-        from: user?.id,
-        to: memberId,
-        createdAt: new Date(),
-        read: false,
-        boardId: id,
-        message: `${user?.displayName} invited you to join board ${board_title}`,
+      toast.promise(sendInviteNotification(memberId), {
+        pending: "Sending invite...",
+        success: "Invite sent",
+        error: "Error sending invite",
       });
     } catch (error) {
       console.log(error);
@@ -70,6 +80,7 @@ const AddMemberModal = () => {
       <button className="btn" onClick={onOpen}>
         Share
       </button>
+      <ToastContainer />
 
       <Modal open={isOpen} onClose={onClose}>
         <div className="bg-white rounded-sm min-h-1/3 max-w-lg w-full">
