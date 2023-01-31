@@ -109,7 +109,7 @@ const BoardPage = () => {
 
   return (
     <Layout>
-      <div className="px-10 mb-6 flex items-center justify-between">
+      <div className="px-4 md:px-10 mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">{board?.title}</h1>
         <div className="flex gap-1">
           <Avatar

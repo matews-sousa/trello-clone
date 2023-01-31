@@ -76,12 +76,12 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="px-10 py-10">
+      <div className="px-4 md:px-10 py-10">
         <header className="flex justify-between">
           <h1 className="text-3xl font-semibold">My Boards</h1>
           <AddBoardModal />
         </header>
-        <div className="flex flex-wrap gap-6 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
           {myBoards.map((board) => (
             <BoardCard key={board.id} board={board} />
           ))}
@@ -93,7 +93,7 @@ export default function Home() {
             </h1>
           </header>
         )}
-        <div className="flex flex-wrap gap-6 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
           {memberBoards.map((board) => (
             <BoardCard key={board.id} board={board} />
           ))}

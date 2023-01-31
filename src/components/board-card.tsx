@@ -15,7 +15,7 @@ const BoardCard = ({ board }: Props) => {
         query: { board_title: board.title },
       }}
       key={board.id}
-      className="bg-white shadow-md rounded-xl p-4 w-72"
+      className="bg-white shadow-md rounded-xl p-4 col-span-1"
     >
       <img
         src={board.cover}

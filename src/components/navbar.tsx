@@ -37,7 +37,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className="px-10 py-6 border-b border-b-gray-300 bg-white flex items-center justify-between fixed top-0 inset-x-0 max-w-screen">
+    <nav className="px-4 md:px-10 py-6 border-b border-b-gray-300 bg-white flex items-center justify-between fixed top-0 inset-x-0 max-w-screen">
       <Link href="/" aria-label="Home">
         <img src="/Logo.svg" alt="" />
       </Link>
@@ -52,7 +52,7 @@ const Navbar = () => {
               <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full"></span>
             )}
           </Popover.Button>
-          <Popover.Panel className="absolute -translate-x-2/3 transform top-12 max-w-sm w-screen bg-white ring-1 ring-gray-300 rounded-sm z-50">
+          <Popover.Panel className="absolute -translate-x-1/3 transform top-12 max-w-xs w-screen bg-white ring-1 ring-gray-300 rounded-sm z-50">
             <h4 className="font-medium border-b border-gray-300 p-4">
               Notifications
             </h4>
