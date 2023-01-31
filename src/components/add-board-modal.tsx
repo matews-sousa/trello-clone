@@ -28,7 +28,7 @@ const AddBoardModal = () => {
       const docRef = await addDoc(collection(db, "boards"), {
         title,
         cover: imageSelected,
-        ownerId: user.uid,
+        ownerId: user.id,
         createdAt: new Date(),
       });
       closeModal();
