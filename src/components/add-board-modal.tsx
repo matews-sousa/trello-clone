@@ -25,14 +25,14 @@ const AddBoardModal = () => {
     if (!user) return;
 
     try {
-      const docRef = await addDoc(collection(db, "boards"), {
+      await addDoc(collection(db, "boards"), {
         title,
         cover: imageSelected,
         ownerId: user.id,
         createdAt: new Date(),
+        membersIds: [],
       });
       closeModal();
-      console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
     }

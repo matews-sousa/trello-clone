@@ -17,11 +17,13 @@ const BoardCard = ({ board }: Props) => {
       key={board.id}
       className="bg-white shadow-md rounded-xl p-4 col-span-1"
     >
-      <img
-        src={board.cover}
-        alt=""
-        className="rounded-xl w-full h-40 object-cover"
-      />
+      {board.cover && (
+        <img
+          src={board.cover}
+          alt=""
+          className="rounded-xl w-full h-40 object-cover"
+        />
+      )}
       <h2 className="text-xl font-semibold mt-4">{board.title}</h2>
       <div className="mt-4 flex gap-2">
         <Avatar
