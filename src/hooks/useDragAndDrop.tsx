@@ -12,7 +12,7 @@ const useDragAndDrop = (
   const [activeItem, setActiveItem] = useState<IItem | null | undefined>(null);
 
   const handleDragStart = (event: DragStartEvent) => {
-    if (!lists) return;
+    if (!lists || !event.active.data.current?.sortable) return;
     const activeList = find(
       lists,
       event.active.data.current?.sortable.containerId,
@@ -24,7 +24,7 @@ const useDragAndDrop = (
   const handleDragCancel = () => setActiveItem(null);
 
   const handleDragOver = ({ active, over }: DragOverEvent) => {
-    if (!over?.id || !lists) return;
+    if (!over?.id || !active.data.current?.sortable || !lists) return;
 
     const activeListId = active.data.current?.sortable.containerId;
     const overListId = over.data.current?.sortable.containerId || over.id;
@@ -58,7 +58,7 @@ const useDragAndDrop = (
   };
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over || !lists) {
+    if (!over || !active.data.current?.sortable || !lists) {
       setActiveItem(null);
       return;
     }
